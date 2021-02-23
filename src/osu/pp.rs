@@ -367,6 +367,18 @@ impl<'m> OsuPP<'m> {
         aim_value *= 0.5 + self.acc.unwrap() / 2.0;
         aim_value *= 0.98 + attributes.od * attributes.od / 2500.0;
 
+        // Peace edition: relax aim nerf
+        #[cfg(feature = "peace_edition")]
+        if self.mods.rx() {
+            aim_value *= 0.9;
+        }
+
+        // Peace edition: autopilot aim nerf
+        #[cfg(feature = "peace_edition")]
+        if self.mods.ap() {
+            aim_value *= 0.3;
+        }
+
         aim_value
     }
 
@@ -419,6 +431,18 @@ impl<'m> OsuPP<'m> {
                 * (self.n50.unwrap_or(0) as f32 - total_hits / 500.0),
         );
 
+        // Peace edition: relax spd nerf
+        #[cfg(feature = "peace_edition")]
+        if self.mods.rx() {
+            speed_value *= 0.3;
+        }
+
+        // Peace edition: autopilot spd nerf
+        #[cfg(feature = "peace_edition")]
+        if self.mods.ap() {
+            speed_value *= 0.9;
+        }
+
         speed_value
     }
 
@@ -446,6 +470,18 @@ impl<'m> OsuPP<'m> {
         // FL bonus
         if self.mods.fl() {
             acc_value *= 1.02;
+        }
+
+        // Peace edition: relax acc nerf
+        #[cfg(feature = "peace_edition")]
+        if self.mods.rx() {
+            acc_value *= 0.7;
+        }
+
+        // Peace edition: autopilot spd nerf
+        #[cfg(feature = "peace_edition")]
+        if self.mods.ap() {
+            acc_value *= 0.7;
         }
 
         acc_value

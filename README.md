@@ -97,15 +97,16 @@ println!("PP: {}", result.pp());
 
 | Flag | Description |
 |-----|-----|
-| `default` | Enable all modes and choose the `no_leniency` version for osu!standard. |
+| **`default`** | Enable **`peace_edition`**, **all modes** and choose the **`no_leniency`** version for osu!standard. Set `default_features = false` to disable. |
+| **`peace_edition`** | *Nerf relax and autopilot pp.* Relax: `aim * 0.9, spd * 0.3, acc *0.7`; Autopilot: `aim * 0.3, spd * 0.9, acc * 0.7` |
 | `taiko` | Enable osu!taiko. |
 | `fruits` | Enable osu!ctb. |
 | `mania` | Enable osu!mania. |
 | `osu` | Enable osu!standard. Requires to also enable exactly one of the features `no_leniency`, `no_sliders_no_leniency`, or `all_included`. |
-| `no_leniency` | When calculating difficulty attributes in osu!standard, ignore stack leniency but consider sliders. Solid middleground between performance and precision, hence the default version. |       
+| **`no_leniency`** | When calculating difficulty attributes in osu!standard, ignore stack leniency but consider sliders. Solid middleground between performance and precision, hence the default version. |       
 | `no_sliders_no_leniency` | When calculating difficulty attributes in osu!standard, ignore stack leniency and sliders. Best performance but slightly less precision than `no_leniency`. |
 | `all_included` | When calculating difficulty attributes in osu!standard, consider both stack leniency and sliders. Best precision but significantly worse performance than `no_leniency`. |
-| `async_std` | Enable async beatmap parsing with `async-std` |
+| **`async_std`** | Enable async beatmap parsing with `async-std` |
 
 ### Roadmap
 

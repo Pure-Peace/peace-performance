@@ -10,7 +10,7 @@ description = "osu! pp & stars calculation. Peace edition"
 keywords = ["osu", "pp", "stars", "async", "async-std"]
 
 [features]
-default = ["osu", "taiko", "fruits", "mania", "no_leniency", "async_std"]
+default = ["osu", "taiko", "fruits", "mania", "no_leniency", "async_std", "peace_edition"]
 
 osu = []
 taiko = []
@@ -20,7 +20,9 @@ mania = []
 all_included = []
 no_leniency = []
 no_sliders_no_leniency = []
+
 async_std = ["async-std"]
+peace_edition = []
 
 [dependencies]
 async-std = { version = "1.9.0", optional = true }
