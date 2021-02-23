@@ -14,9 +14,11 @@ pub trait Mods: Copy {
     const HD: u32 = 1 << 3;
     const HR: u32 = 1 << 4;
     const DT: u32 = 1 << 6;
+    const RX: u32 = 1 << 7;
     const HT: u32 = 1 << 8;
     const FL: u32 = 1 << 10;
     const SO: u32 = 1 << 12;
+    const AP: u32 = 1 << 13;
 
     fn change_speed(self) -> bool;
     fn change_map(self) -> bool;
@@ -28,9 +30,11 @@ pub trait Mods: Copy {
     fn hd(self) -> bool;
     fn hr(self) -> bool;
     fn dt(self) -> bool;
+    fn rx(self) -> bool;
     fn ht(self) -> bool;
     fn fl(self) -> bool;
     fn so(self) -> bool;
+    fn ap(self) -> bool;
 }
 
 impl Mods for u32 {
@@ -72,7 +76,9 @@ impl Mods for u32 {
     impl_mods!(hd, HD);
     impl_mods!(hr, HR);
     impl_mods!(dt, DT);
+    impl_mods!(rx, RX);
     impl_mods!(ht, HT);
     impl_mods!(fl, FL);
     impl_mods!(so, SO);
+    impl_mods!(ap, AP);
 }
