@@ -1,11 +1,9 @@
-[![crates.io](https://img.shields.io/crates/v/rosu-pp.svg)](https://crates.io/crates/rosu-pp) [![docs](https://docs.rs/rosu-pp/badge.svg)](https://docs.rs/rosu-pp)
-
-# rosu-pp
+# peace-performance
 
 A standalone crate to calculate star ratings and performance points for all [osu!](https://osu.ppy.sh/home) gamemodes.
+Peace edition
 
-Conversions are generally not supported.
-Async is supported.
+Original: **[rosu-pp](https://github.com/MaxOhn/rosu-pp)** | MIT License
 
 ### Usage
 

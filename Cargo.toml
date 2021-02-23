@@ -1,13 +1,12 @@
 [package]
-name = "rosu-pp"
+name = "peace-performance"
 version = "0.1.2"
-authors = ["MaxOhn <ohn.m@hotmail.de>"]
+authors = ["MaxOhn <ohn.m@hotmail.de>", "Pure-Peace <940857703@qq.com>"]
 edition = "2018"
 license = "MIT"
 readme = "README.md"
-repository = "https://github.com/MaxOhn/rosu-pp"
-documentation = "https://docs.rs/rosu-pp/"
-description = "osu! difficulty and pp calculation for all modes"
+repository = "https://github.com/Pure-Peace/peace-performance"
+description = "osu! pp & stars calculation. Peace edition"
 keywords = ["osu", "pp", "stars", "async", "async-std"]
 
 [features]
