@@ -1,8 +1,8 @@
 #![cfg(feature = "fruits")]
 
-extern crate rosu_pp;
+extern crate peace_performance;
 
-use rosu_pp::Beatmap;
+use peace_performance::Beatmap;
 
 struct MapResult {
     map_id: u32,
@@ -54,7 +54,7 @@ fn fruits_sync() {
             Err(why) => panic!("Error while parsing map {}: {}", map_id, why),
         };
 
-        let result = rosu_pp::FruitsPP::new(&map).mods(*mods).calculate();
+        let result = peace_performance::FruitsPP::new(&map).mods(*mods).calculate();
 
         assert_result!("Stars" => result.stars(), star_margin, stars, map_id, mods);
         assert_result!("PP" => result.pp(), pp_margin, pp, map_id, mods);
@@ -88,7 +88,7 @@ fn fruits_async_tokio() {
                     Err(why) => panic!("Error while parsing map {}: {}", map_id, why),
                 };
 
-                let result = rosu_pp::FruitsPP::new(&map).mods(*mods).calculate();
+                let result = peace_performance::FruitsPP::new(&map).mods(*mods).calculate();
 
                 assert_result!("Stars" => result.stars(), star_margin, stars, map_id, mods);
                 assert_result!("PP" => result.pp(), pp_margin, pp, map_id, mods);
@@ -121,7 +121,7 @@ fn fruits_async_std() {
                 Err(why) => panic!("Error while parsing map {}: {}", map_id, why),
             };
 
-            let result = rosu_pp::FruitsPP::new(&map).mods(*mods).calculate();
+            let result = peace_performance::FruitsPP::new(&map).mods(*mods).calculate();
 
             assert_result!("Stars" => result.stars(), star_margin, stars, map_id, mods);
             assert_result!("PP" => result.pp(), pp_margin, pp, map_id, mods);

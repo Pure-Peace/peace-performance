@@ -10,7 +10,7 @@
 //!
 //! ```no_run
 //! use std::fs::File;
-//! use rosu_pp::{Beatmap, BeatmapExt};
+//! use peace_performance::{Beatmap, BeatmapExt};
 //!
 //! # /*
 //! let file = match File::open("/path/to/file.osu") {
@@ -64,7 +64,7 @@
 //! If either the `async_tokio` or `async_std` feature is enabled, beatmap parsing will be async.
 //!
 //! ```no_run
-//! use rosu_pp::{Beatmap, BeatmapExt};
+//! use peace_performance::{Beatmap, BeatmapExt};
 //! # /*
 //! use async_std::fs::File;
 //! # */

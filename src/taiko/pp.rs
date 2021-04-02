@@ -6,7 +6,7 @@ use crate::{Beatmap, Mods, PpResult, StarResult};
 /// # Example
 ///
 /// ```
-/// # use rosu_pp::{TaikoPP, PpResult, Beatmap};
+/// # use peace_performance::{TaikoPP, PpResult, Beatmap};
 /// # /*
 /// let map: Beatmap = ...
 /// # */

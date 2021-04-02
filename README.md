@@ -4,6 +4,7 @@ A standalone crate to calculate star ratings and performance points for all [osu
 Peace edition
 
 Original: **[rosu-pp](https://github.com/MaxOhn/rosu-pp)** | MIT License
+
 Conversions between gamemodes are generally not supported.
 
 Async is supported through features, see below.
@@ -12,7 +13,7 @@ Async is supported through features, see below.
 
 ```rust
 use std::fs::File;
-use rosu_pp::{Beatmap, BeatmapExt};
+use peace_performance::{Beatmap, BeatmapExt};
 
 let file = match File::open("/path/to/file.osu") {
     Ok(file) => file,
@@ -102,7 +103,7 @@ println!("PP: {}", result.pp());
 
 | Flag | Description |
 |-----|-----|
-| **`default`** | Enable **`peace_edition`**, **all modes** and choose the **`no_leniency`** version for osu!standard. Set `default_features = false` to disable. |
+| **`default`** | Enable **all modes** and choose the **`no_leniency`** version for osu!standard. Set `default_features = false` to disable. |
 | **`peace_edition`** | *Nerf relax and autopilot pp.* Relax: `aim * 0.9, spd * 0.3, acc *0.7`; Autopilot: `aim * 0.3, spd * 0.9, acc * 0.7` |
 | `taiko` | Enable osu!taiko. |
 | `fruits` | Enable osu!ctb. |
@@ -122,7 +123,7 @@ Comparing the PP calculation speed between [osu-perf](https://gitlab.com/JackRed
 
 Comparing the PP calculation speed between rosu-pp's `all_included`, `no_leniency`, and `no_sliders_no_leniency` versions:
 
-<img src="./benchmark_results/rosu_pp_calc.svg">
+<img src="./benchmark_results/peace_performance_calc.svg">
 
 Comparing the PP (in)accuracy between rosu-pp's `all_included`, `no_leniency`, and `no_sliders_no_leniency` versions:
 

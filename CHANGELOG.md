@@ -5,7 +5,7 @@
 # v0.2.0
 
 - Async beatmap parsing through features `async_tokio` or `async_std`
-- Hide various parsing related types further inwards, i.e. `rosu_pp::parse::some_type` instead of `rosu_pp::some_type`
+- Hide various parsing related types further inwards, i.e. `peace_performance::parse::some_type` instead of `peace_performance::some_type`
   - Affected types: `DifficultyPoint`, `HitObject`, `Pos2`, `TimingPoint`, `HitObjectKind`, `PathType`, `HitSound`
 
 ## v0.1.1
