@@ -371,11 +371,8 @@ impl<'m> OsuPP<'m> {
         #[cfg(feature = "peace_edition")]
         if self.mods.rx() {
             aim_value *= 0.9;
-        }
-
-        // Peace edition: autopilot aim nerf
-        #[cfg(feature = "peace_edition")]
-        if self.mods.ap() {
+        } else if self.mods.ap() {
+            // autopilot aim nerf
             aim_value *= 0.3;
         }
 
@@ -435,11 +432,8 @@ impl<'m> OsuPP<'m> {
         #[cfg(feature = "peace_edition")]
         if self.mods.rx() {
             speed_value *= 0.3;
-        }
-
-        // Peace edition: autopilot spd nerf
-        #[cfg(feature = "peace_edition")]
-        if self.mods.ap() {
+        } else if self.mods.ap() {
+            // autopilot spd nerf
             speed_value *= 0.9;
         }
 
@@ -476,12 +470,15 @@ impl<'m> OsuPP<'m> {
         #[cfg(feature = "peace_edition")]
         if self.mods.rx() {
             acc_value *= 0.7;
-        }
-
-        // Peace edition: autopilot spd nerf
-        #[cfg(feature = "peace_edition")]
-        if self.mods.ap() {
-            acc_value *= 0.7;
+        } else {
+            // V2 bonus
+            if self.mods.v2() {
+                acc_value *= 1.14;
+            }
+            // autopilot spd nerf
+            if self.mods.ap() {
+                acc_value *= 0.7;
+            }
         }
 
         acc_value
