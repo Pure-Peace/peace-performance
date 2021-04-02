@@ -2,6 +2,11 @@
 
 - No changes so far
 
+# v0.2.1
+
+- Add mods Score v2.
+- Buff Score v2 with ACC value bonus * 1.14 (Only STD).
+
 # v0.2.0
 
 - Sync with rosu-pp 0.2.0
