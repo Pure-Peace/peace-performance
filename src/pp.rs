@@ -41,6 +41,22 @@ impl<'m> AnyPP<'m> {
         }
     }
 
+    #[cfg(any(feature = "async_std", feature = "async_tokio"))]
+    #[inline]
+    pub async fn calculate(self) -> PpResult {
+        match self {
+            #[cfg(feature = "fruits")]
+            Self::Fruits(f) => f.calculate_async().await,
+            #[cfg(feature = "mania")]
+            Self::Mania(m) => m.calculate_async().await,
+            #[cfg(feature = "osu")]
+            Self::Osu(o) => o.calculate_async().await,
+            #[cfg(feature = "taiko")]
+            Self::Taiko(t) => t.calculate_async().await,
+        }
+    }
+
+    #[cfg(not(any(feature = "async_std", feature = "async_tokio")))]
     #[inline]
     pub fn calculate(self) -> PpResult {
         match self {

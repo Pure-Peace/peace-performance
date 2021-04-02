@@ -10,7 +10,9 @@ description = "osu! pp & stars calculation. Peace edition"
 keywords = ["osu", "pp", "stars", "async", "async-std"]
 
 [features]
-default = ["osu", "taiko", "fruits", "mania", "no_leniency", "tokio"]
+default = ["osu", "taiko", "fruits", "mania", "all_included", "async_std", "peace_edition"]
+
+peace_edition = []
 
 # game modes
 osu = []

@@ -103,7 +103,7 @@ println!("PP: {}", result.pp());
 
 | Flag | Description |
 |-----|-----|
-| **`default`** | Enable **all modes** and choose the **`no_leniency`** version for osu!standard. Set `default_features = false` to disable. |
+| **`default`** | Enable **async_std**, **peace_edition**, **all modes** and choose the **`all_included`** version for osu!standard. Set `default_features = false` to disable. |
 | **`peace_edition`** | *Nerf relax and autopilot pp.* Relax: `aim * 0.9, spd * 0.3, acc *0.7`; Autopilot: `aim * 0.3, spd * 0.9, acc * 0.7` |
 | `taiko` | Enable osu!taiko. |
 | `fruits` | Enable osu!ctb. |
