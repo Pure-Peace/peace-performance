@@ -1,5 +1,5 @@
 use super::{stars, DifficultyAttributes};
-use crate::{Beatmap, Mods, PpResult, StarResult};
+use crate::{Beatmap, Mods, PpRaw, PpResult, StarResult};
 
 /// Calculator for pp on osu!ctb maps.
 ///
@@ -358,7 +358,10 @@ impl<'m> FruitsPP<'m> {
         }
 
         PpResult {
+            mode: 2,
+            mods: self.mods,
             pp,
+            raw: PpRaw::new(Some(pp), None, None, None, pp),
             attributes: StarResult::Fruits(attributes),
         }
     }

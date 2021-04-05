@@ -1,5 +1,5 @@
 use super::{stars, DifficultyAttributes};
-use crate::{Beatmap, Mods, PpResult, StarResult};
+use crate::{Beatmap, Mods, PpRaw, PpResult, StarResult};
 
 /// Calculator for pp on osu!mania maps.
 ///
@@ -131,7 +131,10 @@ impl<'m> ManiaPP<'m> {
         let pp = (strain_value.powf(1.1) + acc_value.powf(1.1)).powf(1.0 / 1.1) * multiplier;
 
         PpResult {
+            mode: 3,
+            mods: self.mods,
             pp,
+            raw: PpRaw::new(None, None, Some(strain_value), Some(acc_value), pp),
             attributes: StarResult::Mania(DifficultyAttributes { stars }),
         }
     }

@@ -2,6 +2,13 @@
 
 - No changes so far
 
+# v0.2.3
+
+- Now, we can get more info from pp result
+- Add PpResult.raw (A struct included aim, spd, acc, str values)
+- Add PpResult.mods
+- Add PpResult.mode
+
 # v0.2.2
 
 - Now, it will be more comfortable when calculating multiple different ACC values.

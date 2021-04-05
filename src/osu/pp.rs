@@ -1,5 +1,5 @@
 use super::DifficultyAttributes;
-use crate::{Beatmap, Mods, PpResult, StarResult};
+use crate::{Beatmap, Mods, PpRaw, PpResult, StarResult};
 
 /// Calculator for pp on osu!standard maps.
 ///
@@ -241,7 +241,7 @@ impl<'m> OsuPP<'m> {
 
         let acc = (6 * self.n300.unwrap() + 2 * self.n100.unwrap() + self.n50.unwrap()) as f32
             / (6 * n_objects) as f32;
-
+            
         self.acc.replace(acc);
     }
 
@@ -356,7 +356,19 @@ impl<'m> OsuPP<'m> {
 
         let attributes = StarResult::Osu(self.attributes.clone().unwrap());
 
-        PpResult { pp, attributes }
+        PpResult {
+            mode: 0,
+            mods: self.mods,
+            pp,
+            raw: PpRaw::new(
+                Some(aim_value),
+                Some(speed_value),
+                None,
+                Some(acc_value),
+                pp,
+            ),
+            attributes,
+        }
     }
 
     fn compute_aim_value(&self, total_hits: f32) -> f32 {
