@@ -2,6 +2,12 @@
 
 - No changes so far
 
+# v0.2.2
+
+- Now, it will be more comfortable when calculating multiple different ACC values.
+- Add mutable reference methods: set_accuracy()
+- calculate() now use mutable reference.
+
 # v0.2.1
 
 - Add mods Score v2.

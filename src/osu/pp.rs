@@ -138,6 +138,56 @@ impl<'m> OsuPP<'m> {
     /// Be sure to set `misses` beforehand!
     /// In case of a partial play, be also sure to set `passed_objects` beforehand!
     pub fn accuracy(mut self, acc: f32) -> Self {
+        self.set_accuracy(acc);
+        self
+    }
+
+    #[inline(always)]
+    /// Set acc value
+    /// 
+    /// If it is used to calculate the PP of multiple different ACCs, 
+    /// it should be called from high to low according to the ACC value, otherwise it is invalid.
+    /// 
+    /// Examples:
+    /// ```
+    /// // valid
+    /// let acc_100 = {
+    ///     c.set_accuracy(100.0);
+    ///     c.calculate().await
+    /// };
+    /// let acc_99 = {
+    ///     c.set_accuracy(99.0);
+    ///     c.calculate().await
+    /// };
+    /// let acc_98 = {
+    ///     c.set_accuracy(98.0);
+    ///     c.calculate().await
+    /// };
+    /// let acc_95 = {
+    ///     c.set_accuracy(95.0);
+    ///     c.calculate().await
+    /// };
+    /// 
+    /// // invalid
+    /// let acc_95 = {
+    ///     c.set_accuracy(95.0);
+    ///     c.calculate().await
+    /// };
+    /// let acc_98 = {
+    ///     c.set_accuracy(98.0);
+    ///     c.calculate().await
+    /// };
+    /// let acc_99 = {
+    ///     c.set_accuracy(99.0);
+    ///     c.calculate().await
+    /// };
+    /// let acc_100 = {
+    ///     c.set_accuracy(100.0);
+    ///     c.calculate().await
+    /// };
+    /// ```
+    /// 
+    pub fn set_accuracy(&mut self, acc: f32) {
         let n_objects = self
             .passed_objects
             .unwrap_or_else(|| self.map.hit_objects.len());
@@ -193,8 +243,6 @@ impl<'m> OsuPP<'m> {
             / (6 * n_objects) as f32;
 
         self.acc.replace(acc);
-
-        self
     }
 
     fn assert_hitresults(&mut self) {
@@ -233,21 +281,21 @@ impl<'m> OsuPP<'m> {
     /// Returns an object which contains the pp and [`DifficultyAttributes`](crate::osu::DifficultyAttributes)
     /// containing stars and other attributes.
     #[cfg(feature = "no_leniency")]
-    pub fn calculate(self) -> PpResult {
+    pub fn calculate(&self) -> PpResult {
         self.calculate_with_func(super::no_leniency::stars)
     }
 
     /// Returns an object which contains the pp and [`DifficultyAttributes`](crate::osu::DifficultyAttributes)
     /// containing stars and other attributes.
     #[cfg(feature = "no_sliders_no_leniency")]
-    pub fn calculate(self) -> PpResult {
+    pub fn calculate(&self) -> PpResult {
         self.calculate_with_func(super::no_sliders_no_leniency::stars)
     }
 
     /// Returns an object which contains the pp and [`DifficultyAttributes`](crate::osu::DifficultyAttributes)
     /// containing stars and other attributes.
     #[cfg(feature = "all_included")]
-    pub fn calculate(self) -> PpResult {
+    pub fn calculate(&mut self) -> PpResult {
         self.calculate_with_func(super::all_included::stars)
     }
 
@@ -257,12 +305,12 @@ impl<'m> OsuPP<'m> {
         feature = "no_sliders_no_leniency",
         feature = "all_included"
     )))]
-    pub(crate) fn calculate(self) -> PpResult {
+    pub(crate) fn calculate(&self) -> PpResult {
         unreachable!()
     }
 
     #[inline]
-    pub async fn calculate_async(self) -> PpResult {
+    pub async fn calculate_async(&mut self) -> PpResult {
         self.calculate()
     }
 
@@ -271,7 +319,7 @@ impl<'m> OsuPP<'m> {
     ///
     /// `stars_func` will be used to calculate the difficulty attributes if they are not yet given.
     fn calculate_with_func(
-        mut self,
+        &mut self,
         stars_func: impl FnOnce(&Beatmap, u32, Option<usize>) -> StarResult,
     ) -> PpResult {
         if self.attributes.is_none() {
@@ -306,7 +354,7 @@ impl<'m> OsuPP<'m> {
             .powf(1.0 / 1.1)
             * multiplier;
 
-        let attributes = StarResult::Osu(self.attributes.unwrap());
+        let attributes = StarResult::Osu(self.attributes.clone().unwrap());
 
         PpResult { pp, attributes }
     }

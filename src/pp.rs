@@ -13,6 +13,7 @@ use crate::OsuPP;
 use crate::TaikoPP;
 
 /// Calculator for pp on maps of any mode.
+#[derive(Clone)]
 pub enum AnyPP<'m> {
     #[cfg(feature = "fruits")]
     Fruits(FruitsPP<'m>),
@@ -43,7 +44,7 @@ impl<'m> AnyPP<'m> {
 
     #[cfg(any(feature = "async_std", feature = "async_tokio"))]
     #[inline]
-    pub async fn calculate(self) -> PpResult {
+    pub async fn calculate(&mut self) -> PpResult {
         match self {
             #[cfg(feature = "fruits")]
             Self::Fruits(f) => f.calculate_async().await,
@@ -58,7 +59,7 @@ impl<'m> AnyPP<'m> {
 
     #[cfg(not(any(feature = "async_std", feature = "async_tokio")))]
     #[inline]
-    pub fn calculate(self) -> PpResult {
+    pub fn calculate(&mut self) -> PpResult {
         match self {
             #[cfg(feature = "fruits")]
             Self::Fruits(f) => f.calculate(),
@@ -140,6 +141,71 @@ impl<'m> AnyPP<'m> {
             Self::Osu(o) => Self::Osu(o.accuracy(acc)),
             #[cfg(feature = "taiko")]
             Self::Taiko(t) => Self::Taiko(t.accuracy(acc)),
+        }
+    }
+
+
+    #[allow(unused_variables)]
+    #[inline(always)]
+    /// Set the accuracy between 0.0 and 100.0.
+    ///
+    /// For some modes this method depends on previously set values
+    /// be sure to call this last before calling `calculate`.
+    ///
+    /// Irrelevant for osu!mania.
+    /// 
+    /// If it is used to calculate the PP of multiple different ACCs, 
+    /// it should be called from high to low according to the ACC value, otherwise it is invalid.
+    /// 
+    /// Examples:
+    /// ```
+    /// // valid
+    /// let acc_100 = {
+    ///     c.set_accuracy(100.0);
+    ///     c.calculate().await
+    /// };
+    /// let acc_99 = {
+    ///     c.set_accuracy(99.0);
+    ///     c.calculate().await
+    /// };
+    /// let acc_98 = {
+    ///     c.set_accuracy(98.0);
+    ///     c.calculate().await
+    /// };
+    /// let acc_95 = {
+    ///     c.set_accuracy(95.0);
+    ///     c.calculate().await
+    /// };
+    /// 
+    /// // invalid
+    /// let acc_95 = {
+    ///     c.set_accuracy(95.0);
+    ///     c.calculate().await
+    /// };
+    /// let acc_98 = {
+    ///     c.set_accuracy(98.0);
+    ///     c.calculate().await
+    /// };
+    /// let acc_99 = {
+    ///     c.set_accuracy(99.0);
+    ///     c.calculate().await
+    /// };
+    /// let acc_100 = {
+    ///     c.set_accuracy(100.0);
+    ///     c.calculate().await
+    /// };
+    /// ```
+    /// 
+    pub fn set_accuracy(&mut self, acc: f32) {
+        match self {
+            #[cfg(feature = "fruits")]
+            Self::Fruits(f) => f.set_accuracy(acc),
+            #[cfg(feature = "mania")]
+            Self::Mania(_) => {}
+            #[cfg(feature = "osu")]
+            Self::Osu(o) => o.set_accuracy(acc),
+            #[cfg(feature = "taiko")]
+            Self::Taiko(t) => t.set_accuracy(acc),
         }
     }
 

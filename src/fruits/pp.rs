@@ -144,7 +144,57 @@ impl<'m> FruitsPP<'m> {
     /// Generate the hit results with respect to the given accuracy between `0` and `100`.
     ///
     /// Be sure to set `misses` beforehand! Also, if available, set `attributes` beforehand.
-    pub fn accuracy(mut self, mut acc: f32) -> Self {
+    pub fn accuracy(mut self, acc: f32) -> Self {
+        self.set_accuracy(acc);
+        self
+    }
+
+    #[inline(always)]
+    /// Set acc value
+    /// 
+    /// If it is used to calculate the PP of multiple different ACCs, 
+    /// it should be called from high to low according to the ACC value, otherwise it is invalid.
+    /// 
+    /// Examples:
+    /// ```
+    /// // valid
+    /// let acc_100 = {
+    ///     c.set_accuracy(100.0);
+    ///     c.calculate().await
+    /// };
+    /// let acc_99 = {
+    ///     c.set_accuracy(99.0);
+    ///     c.calculate().await
+    /// };
+    /// let acc_98 = {
+    ///     c.set_accuracy(98.0);
+    ///     c.calculate().await
+    /// };
+    /// let acc_95 = {
+    ///     c.set_accuracy(95.0);
+    ///     c.calculate().await
+    /// };
+    /// 
+    /// // invalid
+    /// let acc_95 = {
+    ///     c.set_accuracy(95.0);
+    ///     c.calculate().await
+    /// };
+    /// let acc_98 = {
+    ///     c.set_accuracy(98.0);
+    ///     c.calculate().await
+    /// };
+    /// let acc_99 = {
+    ///     c.set_accuracy(99.0);
+    ///     c.calculate().await
+    /// };
+    /// let acc_100 = {
+    ///     c.set_accuracy(100.0);
+    ///     c.calculate().await
+    /// };
+    /// ```
+    /// 
+    pub fn set_accuracy(&mut self, mut acc: f32) {
         if self.attributes.is_none() {
             self.attributes.replace(
                 stars(self.map, self.mods, self.passed_objects)
@@ -181,8 +231,6 @@ impl<'m> FruitsPP<'m> {
         self.n_droplets.replace(n_droplets);
         self.n_tiny_droplets.replace(n_tiny_droplets);
         self.n_tiny_droplet_misses.replace(n_tiny_droplet_misses);
-
-        self
     }
 
     fn assert_hitresults(&mut self, attributes: &DifficultyAttributes) {
@@ -240,7 +288,7 @@ impl<'m> FruitsPP<'m> {
 
     /// Returns an object which contains the pp and [`DifficultyAttributes`](crate::fruits::DifficultyAttributes)
     /// containing stars and other attributes.
-    pub fn calculate(mut self) -> PpResult {
+    pub fn calculate(&mut self) -> PpResult {
         let attributes = self.attributes.take().unwrap_or_else(|| {
             stars(self.map, self.mods, self.passed_objects)
                 .attributes()
@@ -316,7 +364,7 @@ impl<'m> FruitsPP<'m> {
     }
 
     #[inline]
-    pub async fn calculate_async(self) -> PpResult {
+    pub async fn calculate_async(&mut self) -> PpResult {
         self.calculate()
     }
 

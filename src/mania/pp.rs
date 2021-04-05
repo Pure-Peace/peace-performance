@@ -89,7 +89,7 @@ impl<'m> ManiaPP<'m> {
     }
 
     /// Returns an object which contains the pp and stars.
-    pub fn calculate(self) -> PpResult {
+    pub fn calculate(&self) -> PpResult {
         let stars = self
             .stars
             .unwrap_or_else(|| stars(self.map, self.mods, self.passed_objects).stars());
@@ -137,7 +137,7 @@ impl<'m> ManiaPP<'m> {
     }
 
     #[inline]
-    pub async fn calculate_async(self) -> PpResult {
+    pub async fn calculate_async(&self) -> PpResult {
         self.calculate()
     }
 

@@ -119,11 +119,59 @@ impl<'m> TaikoPP<'m> {
     /// Set the accuracy between 0.0 and 100.0.
     #[inline]
     pub fn accuracy(mut self, acc: f32) -> Self {
+        self.set_accuracy(acc);
+        self
+    }
+
+    #[inline(always)]
+    /// Set acc value
+    /// 
+    /// If it is used to calculate the PP of multiple different ACCs, 
+    /// it should be called from high to low according to the ACC value, otherwise it is invalid.
+    /// 
+    /// Examples:
+    /// ```
+    /// // valid
+    /// let acc_100 = {
+    ///     c.set_accuracy(100.0);
+    ///     c.calculate().await
+    /// };
+    /// let acc_99 = {
+    ///     c.set_accuracy(99.0);
+    ///     c.calculate().await
+    /// };
+    /// let acc_98 = {
+    ///     c.set_accuracy(98.0);
+    ///     c.calculate().await
+    /// };
+    /// let acc_95 = {
+    ///     c.set_accuracy(95.0);
+    ///     c.calculate().await
+    /// };
+    /// 
+    /// // invalid
+    /// let acc_95 = {
+    ///     c.set_accuracy(95.0);
+    ///     c.calculate().await
+    /// };
+    /// let acc_98 = {
+    ///     c.set_accuracy(98.0);
+    ///     c.calculate().await
+    /// };
+    /// let acc_99 = {
+    ///     c.set_accuracy(99.0);
+    ///     c.calculate().await
+    /// };
+    /// let acc_100 = {
+    ///     c.set_accuracy(100.0);
+    ///     c.calculate().await
+    /// };
+    /// ```
+    /// 
+    pub fn set_accuracy(&mut self, acc: f32) {
         self.acc = acc / 100.0;
         self.n300.take();
         self.n100.take();
-
-        self
     }
 
     /// Amount of passed objects for partial plays, e.g. a fail.
@@ -135,7 +183,7 @@ impl<'m> TaikoPP<'m> {
     }
 
     /// Returns an object which contains the pp and stars.
-    pub fn calculate(mut self) -> PpResult {
+    pub fn calculate(&mut self) -> PpResult {
         let stars = self
             .stars
             .unwrap_or_else(|| stars(self.map, self.mods, self.passed_objects).stars());
@@ -182,7 +230,7 @@ impl<'m> TaikoPP<'m> {
     }
 
     #[inline]
-    pub async fn calculate_async(self) -> PpResult {
+    pub async fn calculate_async(&mut self) -> PpResult {
         self.calculate()
     }
 
