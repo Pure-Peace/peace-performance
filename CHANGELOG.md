@@ -2,6 +2,11 @@
 
 - No changes so far
 
+# v0.2.4
+
+- Default use tokio
+- Upgrade tokio to 1.6
+
 # v0.2.3
 
 - Now, we can get more info from pp result

@@ -1,16 +1,16 @@
 [package]
 name = "peace-performance"
-version = "0.2.3"
+version = "0.2.4"
 authors = ["MaxOhn <ohn.m@hotmail.de>", "Pure-Peace <940857703@qq.com>"]
 edition = "2018"
 license = "MIT"
 readme = "README.md"
 repository = "https://github.com/Pure-Peace/peace-performance"
 description = "osu! pp & stars calculation. Peace edition"
-keywords = ["osu", "pp", "stars", "async", "async-std"]
+keywords = ["osu", "pp", "stars", "async", "async-std", "tokio"]
 
 [features]
-default = ["osu", "taiko", "fruits", "mania", "all_included", "async_std", "peace_edition"]
+default = ["osu", "taiko", "fruits", "mania", "all_included", "async_tokio", "peace_edition"]
 
 peace_edition = []
 
@@ -34,11 +34,11 @@ version = "1.9"
 optional = true
 
 [dependencies.tokio]
-version = "1.2"
+version = "1.6"
 optional = true
 default-features = false
 features = ["io-util"]
 
 [dev-dependencies.tokio]
-version = "1.2"
+version = "1.6"
 features = ["fs", "rt-multi-thread"]
