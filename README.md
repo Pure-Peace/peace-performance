@@ -28,9 +28,8 @@ let map = match Beatmap::parse(file) {
 
 // If `BeatmapExt` is included, you can make use of
 // some methods on `Beatmap` to make your life simpler.
-// However, to calculate specific pp values, it is recommended
-// to match on the map's mode yourself and modify the mode's
-// pp calculator, e.g. `TaikoPP`, manually.
+// If the mode is known, it is recommended to use the
+// mode's pp calculator, e.g. `TaikoPP`, manually.
 let result = map.pp()
     .mods(24) // HDHR
     .combo(1234)
@@ -117,13 +116,13 @@ println!("PP: {}", result.pp());
 
 ### Benchmarks
 
-Comparing the PP calculation speed between [osu-perf](https://gitlab.com/JackRedstonia/osu-perf/), an [oppai-ng](https://github.com/Francesco149/oppai-ng) rust binding, and rosu-pp's `no_sliders_no_leniency`:
+Comparing the PP calculation speed between [osu-perf](https://gitlab.com/JackRedstonia/osu-perf/) (alternative rust pp calculculation crate), an [oppai-ng](https://github.com/Francesco149/oppai-ng) rust binding, and rosu-pp's `no_sliders_no_leniency`:
 
 <img src="./benchmark_results/crates_pp_calc.svg">
 
 Comparing the PP calculation speed between rosu-pp's `all_included`, `no_leniency`, and `no_sliders_no_leniency` versions:
 
-<img src="./benchmark_results/peace_performance_calc.svg">
+<img src="./benchmark_results/rosu_pp_calc.svg">
 
 Comparing the PP (in)accuracy between rosu-pp's `all_included`, `no_leniency`, and `no_sliders_no_leniency` versions:
 
@@ -133,9 +132,10 @@ Comparing the stars (in)accuracy between rosu-pp's `all_included`, `no_leniency`
 
 <img src="./benchmark_results/stars_inaccuracy.svg">
 
+
 ### Roadmap
 
-- osu sr versions
+- \[x\] osu sr versions
   - \[x\] all included
   - \[x\] no_leniency
   - \[x\] no_sliders_no_leniency

@@ -10,28 +10,28 @@ pub struct Pos2 {
 
 impl Pos2 {
     #[inline]
+    pub fn zero() -> Self {
+        Self::default()
+    }
+
+    #[inline]
     pub fn length_squared(&self) -> f32 {
         self.dot(*self)
     }
 
     #[inline]
     pub fn length(&self) -> f32 {
-        self.length_squared().sqrt()
+        self.x.hypot(self.y)
     }
 
     #[inline]
     pub fn dot(&self, other: Self) -> f32 {
-        self.x * other.x + self.y * other.y
+        self.x.mul_add(other.x, self.y * other.y)
     }
 
     #[inline]
-    pub fn distance(&self, other: &Self) -> f32 {
-        (*self - *other).length()
-    }
-
-    #[inline]
-    pub fn add_scaled(self, other: Pos2, factor: f32) -> Pos2 {
-        self + other * factor
+    pub fn distance(&self, other: Self) -> f32 {
+        (*self - other).length()
     }
 
     #[inline]

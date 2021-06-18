@@ -2,6 +2,24 @@
 
 - No changes so far
 
+# v0.2.5
+
+- sync with rosu-pp 2.2
+- osu & fruits:
+  - Fixed specific slider patterns
+  - Optimized Bezier, Catmull, and other small things
+
+    Benchmarking for osu!standard showed a 25%+ improvement for performance aswell as accuracy
+
+- fruits:
+  - Fixed tick timing for reverse sliders
+
+- taiko:
+  - Micro optimizations
+
+- parse & osu:
+  - Cleanup and tiny optimizations
+
 # v0.2.4
 
 - Default use tokio

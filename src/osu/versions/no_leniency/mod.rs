@@ -1,6 +1,7 @@
 //! The positional offset of notes created by stack leniency is not considered.
 //! This means the jump distance inbetween notes might be slightly off, resulting in small inaccuracies.
-//! Since calculating these offsets is relatively expensive though, this version is faster than `all_included`.
+//! Since calculating these offsets is relatively expensive though,
+//! this version is generally faster than `all_included`.
 
 #![cfg(feature = "no_leniency")]
 
@@ -144,6 +145,8 @@ pub fn stars(map: &Beatmap, mods: impl Mods, passed_objects: Option<usize>) -> S
 
     let stars = aim_strain + speed_strain + (aim_strain - speed_strain).abs() / 2.0;
 
+    diff_attributes.n_circles = map.n_circles as usize;
+    diff_attributes.n_spinners = map.n_spinners as usize;
     diff_attributes.stars = stars;
     diff_attributes.speed_strain = speed_strain;
     diff_attributes.aim_strain = aim_strain;

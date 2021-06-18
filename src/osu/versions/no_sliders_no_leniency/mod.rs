@@ -1,6 +1,6 @@
 //! In addtion to not considering the positional offset caused by stack leniency, slider paths are also ignored.
 //! This means the travel distance of notes is completely omitted which may cause further inaccuracies.
-//! Since the slider paths don't have to be computed though, it should generally be faster than `no_leniency`.
+//! Since the slider paths don't have to be computed though, it is generally faster than `no_leniency`.
 
 #![cfg(feature = "no_sliders_no_leniency")]
 
@@ -60,8 +60,6 @@ pub fn stars(map: &Beatmap, mods: impl Mods, passed_objects: Option<usize>) -> S
     }
 
     let mut max_combo = 0;
-    let mut n_circles = 0;
-    let mut n_spinners = 0;
     let mut state = SliderState::new(&map);
 
     let mut hit_objects = map
@@ -71,7 +69,6 @@ pub fn stars(map: &Beatmap, mods: impl Mods, passed_objects: Option<usize>) -> S
         .filter_map(|h| match &h.kind {
             HitObjectKind::Circle => {
                 max_combo += 1;
-                n_circles += 1;
 
                 Some(Cow::Borrowed(h))
             }
@@ -89,7 +86,6 @@ pub fn stars(map: &Beatmap, mods: impl Mods, passed_objects: Option<usize>) -> S
             }
             HitObjectKind::Spinner { .. } => {
                 max_combo += 1;
-                n_spinners += 1;
 
                 Some(Cow::Borrowed(h))
             }
@@ -172,8 +168,8 @@ pub fn stars(map: &Beatmap, mods: impl Mods, passed_objects: Option<usize>) -> S
         speed_strain,
         aim_strain,
         max_combo,
-        n_circles,
-        n_spinners,
+        n_circles: map.n_circles as usize,
+        n_spinners: map.n_spinners as usize,
     })
 }
 

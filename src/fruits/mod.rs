@@ -14,7 +14,7 @@ use slider_state::SliderState;
 
 use crate::{
     curve::Curve,
-    parse::{HitObjectKind, PathType, Pos2},
+    parse::{HitObjectKind, Pos2},
     Beatmap, Mods, StarResult, Strains,
 };
 
@@ -89,24 +89,8 @@ pub fn stars(map: &Beatmap, mods: impl Mods, passed_objects: Option<usize>) -> S
                     / (map.sv * slider_state.speed_mult)
                     / 100.0;
 
-                // Ensure path type validity
-                let path_type = if (*path_type == PathType::PerfectCurve && curve_points.len() > 3)
-                    || (*path_type == PathType::Linear && curve_points.len() != 2)
-                {
-                    PathType::Bezier
-                } else if curve_points.len() == 2 {
-                    PathType::Linear
-                } else {
-                    *path_type
-                };
-
                 // Build the curve w.r.t. the curve points
-                let curve = match path_type {
-                    PathType::Linear => Curve::linear(curve_points[0], curve_points[1]),
-                    PathType::Bezier => Curve::bezier(curve_points),
-                    PathType::Catmull => Curve::catmull(curve_points),
-                    PathType::PerfectCurve => Curve::perfect(curve_points),
-                };
+                let curve = Curve::new(curve_points, *path_type);
 
                 let mut current_distance = tick_distance;
                 let time_add = duration * (tick_distance / (*pixel_len * *repeats as f32));
@@ -150,7 +134,9 @@ pub fn stars(map: &Beatmap, mods: impl Mods, passed_objects: Option<usize>) -> S
 
                         // Actual ticks
                         if repeat_id & 1 == 1 {
-                            slider_objects.extend(ticks.iter().copied().rev());
+                            slider_objects.extend(ticks.iter().rev().enumerate().map(
+                                |(i, (pos, time))| (*pos, *time + time_add * 2.0 * (i + 1) as f32),
+                            ));
                         } else {
                             slider_objects.extend(ticks.iter().copied());
                         }
@@ -336,22 +322,8 @@ pub fn strains(map: &Beatmap, mods: impl Mods) -> Strains {
                     / (map.sv * slider_state.speed_mult)
                     / 100.0;
 
-                // Ensure path type validity
-                let path_type = if *path_type == PathType::PerfectCurve && curve_points.len() > 3 {
-                    PathType::Bezier
-                } else if curve_points.len() == 2 {
-                    PathType::Linear
-                } else {
-                    *path_type
-                };
-
                 // Build the curve w.r.t. the curve points
-                let curve = match path_type {
-                    PathType::Linear => Curve::linear(curve_points[0], curve_points[1]),
-                    PathType::Bezier => Curve::bezier(curve_points),
-                    PathType::Catmull => Curve::catmull(curve_points),
-                    PathType::PerfectCurve => Curve::perfect(curve_points),
-                };
+                let curve = Curve::new(curve_points, *path_type);
 
                 let mut current_distance = tick_distance;
                 let time_add = duration * (tick_distance / (*pixel_len * *repeats as f32));
