@@ -4,7 +4,9 @@
 
 # v0.2.5
 
-- sync with rosu-pp 2.2
+- sync with rosu-pp 2.2:
+- Reduced amount of required features of `async_std` and `async_tokio`
+- Fixed a panic for some mania difficulty calculations on converts
 - osu & fruits:
   - Fixed specific slider patterns
   - Optimized Bezier, Catmull, and other small things
