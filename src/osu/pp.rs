@@ -145,10 +145,10 @@ impl<'m> OsuPP<'m> {
 
     #[inline(always)]
     /// Set acc value
-    /// 
-    /// If it is used to calculate the PP of multiple different ACCs, 
+    ///
+    /// If it is used to calculate the PP of multiple different ACCs,
     /// it should be called from high to low according to the ACC value, otherwise it is invalid.
-    /// 
+    ///
     /// Examples:
     /// ```
     /// // valid
@@ -168,7 +168,7 @@ impl<'m> OsuPP<'m> {
     ///     c.set_accuracy(95.0);
     ///     c.calculate().await
     /// };
-    /// 
+    ///
     /// // invalid
     /// let acc_95 = {
     ///     c.set_accuracy(95.0);
@@ -187,7 +187,7 @@ impl<'m> OsuPP<'m> {
     ///     c.calculate().await
     /// };
     /// ```
-    /// 
+    ///
     pub fn set_accuracy(&mut self, acc: f32) {
         let n_objects = self
             .passed_objects
@@ -242,7 +242,7 @@ impl<'m> OsuPP<'m> {
 
         let acc = (6 * self.n300.unwrap() + 2 * self.n100.unwrap() + self.n50.unwrap()) as f32
             / (6 * n_objects) as f32;
-            
+
         self.acc.replace(acc);
     }
 
@@ -429,7 +429,7 @@ impl<'m> OsuPP<'m> {
         aim_value *= 0.98 + attributes.od * attributes.od / 2500.0;
 
         // Peace edition: relax aim nerf
-        #[cfg(feature = "peace_edition")]
+        #[cfg(feature = "relax_nerf")]
         if self.mods.rx() {
             aim_value *= 0.9;
         } else if self.mods.ap() {
@@ -490,7 +490,7 @@ impl<'m> OsuPP<'m> {
         );
 
         // Peace edition: relax spd nerf
-        #[cfg(feature = "peace_edition")]
+        #[cfg(feature = "relax_nerf")]
         if self.mods.rx() {
             speed_value *= 0.3;
         } else if self.mods.ap() {
@@ -527,19 +527,16 @@ impl<'m> OsuPP<'m> {
             acc_value *= 1.02;
         }
 
-        // Peace edition: relax acc nerf
+        // Peace edition: relax / ap acc nerf
+        #[cfg(feature = "relax_nerf")]
+        if self.mods.rx() || self.mods.ap() {
+            acc_value *= 0.8;
+        }
+
+        // Peace edition: score v2 buff
         #[cfg(feature = "peace_edition")]
-        if self.mods.rx() {
-            acc_value *= 0.7;
-        } else {
-            // V2 bonus
-            if self.mods.v2() {
-                acc_value *= 1.14;
-            }
-            // autopilot spd nerf
-            if self.mods.ap() {
-                acc_value *= 0.7;
-            }
+        if !self.mods.rx() || self.mods.v2() {
+            acc_value *= 1.2;
         }
 
         acc_value

@@ -103,7 +103,8 @@ println!("PP: {}", result.pp());
 | Flag | Description |
 |-----|-----|
 | **`default`** | Enable **async_tokio**, **peace_edition**, **all modes** and choose the **`all_included`** version for osu!standard. Set `default_features = false` to disable. |
-| **`peace_edition`** | **Buff ScoreV2 (STD)** *Nerf relax and autopilot pp.* Relax: `aim * 0.9, spd * 0.3, acc *0.7`; Autopilot: `aim * 0.3, spd * 0.9, acc * 0.7` |
+| **`peace_edition`** | **Buff ScoreV2 (STD)** - `acc *= 1.2` |
+| `relax_nerf` | *Nerf relax and autopilot pp.* Relax: `aim * 0.9, spd * 0.3, acc *0.8`; Autopilot: `aim * 0.3, spd * 0.9, acc * 0.8` |
 | `taiko` | Enable osu!taiko. |
 | `fruits` | Enable osu!ctb. |
 | `mania` | Enable osu!mania. |
@@ -131,7 +132,6 @@ Comparing the PP (in)accuracy between rosu-pp's `all_included`, `no_leniency`, a
 Comparing the stars (in)accuracy between rosu-pp's `all_included`, `no_leniency`, and `no_sliders_no_leniency` versions:
 
 <img src="./benchmark_results/stars_inaccuracy.svg">
-
 
 ### Roadmap
 

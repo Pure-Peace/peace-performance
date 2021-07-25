@@ -2,6 +2,12 @@
 
 - No changes so far
 
+# v0.2.6
+
+- `peace_edition`: no longer contains relax/ap nerf, instead use `relax_nerf`.
+- `peace_edition`: score v2 - acc_value *= `1.20` (buff).
+- `relax_nerf`: relax / ap - acc_value *= `0.7` -> `0.8`.
+
 # v0.2.5
 
 - sync with rosu-pp 2.2:
