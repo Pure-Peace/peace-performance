@@ -282,14 +282,14 @@ impl<'m> OsuPP<'m> {
     /// Returns an object which contains the pp and [`DifficultyAttributes`](crate::osu::DifficultyAttributes)
     /// containing stars and other attributes.
     #[cfg(feature = "no_leniency")]
-    pub fn calculate(&self) -> PpResult {
+    pub fn calculate(&mut self) -> PpResult {
         self.calculate_with_func(super::no_leniency::stars)
     }
 
     /// Returns an object which contains the pp and [`DifficultyAttributes`](crate::osu::DifficultyAttributes)
     /// containing stars and other attributes.
     #[cfg(feature = "no_sliders_no_leniency")]
-    pub fn calculate(&self) -> PpResult {
+    pub fn calculate(&mut self) -> PpResult {
         self.calculate_with_func(super::no_sliders_no_leniency::stars)
     }
 
