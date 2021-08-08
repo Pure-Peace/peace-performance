@@ -651,9 +651,7 @@ macro_rules! parse_body {
         let mut reader = $reader::new($input);
         let mut buf = String::new();
 
-        loop {
-            $read_method!(reader, &mut buf)?;
-
+        while $read_method!(reader, &mut buf)? != 0 {
             // Check for character U+FEFF specifically thanks to map id 797130
             if !buf
                 .trim_matches(|c: char| c.is_whitespace() || c == '﻿')

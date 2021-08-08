@@ -2,6 +2,10 @@
 
 - No changes so far
 
+# v0.2.9
+
+- Fix: Dead loop when reading an empty .osu file.
+
 # v0.2.8
 
 - When using async features, the `parse_sync` method is still provided, you can choose freely.
