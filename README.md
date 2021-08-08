@@ -3,7 +3,7 @@
 A standalone crate to calculate star ratings and performance points for all [osu!](https://osu.ppy.sh/home) gamemodes.
 Peace edition
 
-Original: **[rosu-pp](https://github.com/MaxOhn/rosu-pp)** | MIT License
+### Fork of **[rosu-pp](https://github.com/MaxOhn/rosu-pp)**  | MIT License
 
 Conversions between gamemodes are generally not supported.
 
