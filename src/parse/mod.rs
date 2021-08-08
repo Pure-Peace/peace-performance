@@ -23,8 +23,7 @@ use sort::legacy_sort;
 use std::cmp::Ordering;
 use std::str::FromStr;
 
-#[cfg(not(any(feature = "async_std", feature = "async_tokio")))]
-use std::io::{BufRead, BufReader, Read};
+use std::io::{BufRead as SyncBufRead, BufReader as SyncBufReader, Read as SyncRead};
 
 #[cfg(feature = "async_tokio")]
 use tokio::io::{AsyncBufReadExt, AsyncRead, BufReader};
@@ -79,43 +78,49 @@ macro_rules! line_prepare {
     }};
 }
 
-macro_rules! section {
+macro_rules! section_sync {
     ($map:ident, $func:ident, $reader:ident, $buf:ident, $section:ident) => {{
-        #[cfg(not(any(feature = "async_std", feature = "async_tokio")))]
         if $map.$func(&mut $reader, &mut $buf, &mut $section)? {
             break;
         }
+    }};
+}
 
-        #[cfg(any(feature = "async_std", feature = "async_tokio"))]
+#[cfg(any(feature = "async_std", feature = "async_tokio"))]
+macro_rules! section_async {
+    ($map:ident, $func:ident, $reader:ident, $buf:ident, $section:ident) => {{
         if $map.$func(&mut $reader, &mut $buf, &mut $section).await? {
             break;
         }
     }};
 }
 
-macro_rules! read_line {
+macro_rules! read_line_sync {
     ($reader:ident, $buf:expr) => {{
-        #[cfg(any(feature = "async_std", feature = "async_tokio"))]
-        {
-            $reader.read_line($buf).await
-        }
-
-        #[cfg(not(any(feature = "async_std", feature = "async_tokio")))]
         {
             $reader.read_line($buf)
         }
     }};
 }
 
+#[cfg(any(feature = "async_std", feature = "async_tokio"))]
+macro_rules! read_line_async {
+    ($reader:ident, $buf:expr) => {{
+        {
+            $reader.read_line($buf).await
+        }
+    }};
+}
+
 macro_rules! parse_general_body {
-    ($self:ident, $reader:ident, $buf:ident, $section:ident) => {{
+    ($read_method:ident, $self:ident, $reader:ident, $buf:ident, $section:ident) => {{
         let mut mode = None;
         let mut empty = true;
 
         #[cfg(all(feature = "osu", feature = "all_included"))]
         let mut stack_leniency = None;
 
-        while read_line!($reader, $buf)? != 0 {
+        while $read_method!($reader, $buf)? != 0 {
             let line = line_prepare!($buf);
 
             if line.starts_with('[') && line.ends_with(']') {
@@ -184,24 +189,33 @@ macro_rules! parse_general {
             buf: &mut String,
             section: &mut Section,
         ) -> ParseResult<bool> {
-            parse_general_body!(self, reader, buf, section)
+            parse_general_body!(read_line_sync, self, reader, buf, section)
         }
     };
 
-    (async $reader:ident<$inner:ident>) => {
+    (async $reader:ident<$inner:ident>, $reader_sync:ident<$inner_sync:ident>) => {
         async fn parse_general<R: $inner + Unpin>(
             &mut self,
             reader: &mut $reader<R>,
             buf: &mut String,
             section: &mut Section,
         ) -> ParseResult<bool> {
-            parse_general_body!(self, reader, buf, section)
+            parse_general_body!(read_line_async, self, reader, buf, section)
+        }
+
+        fn parse_general_sync<R: $inner_sync>(
+            &mut self,
+            reader: &mut $reader_sync<R>,
+            buf: &mut String,
+            section: &mut Section,
+        ) -> ParseResult<bool> {
+            parse_general_body!(read_line_sync, self, reader, buf, section)
         }
     };
 }
 
 macro_rules! parse_difficulty_body {
-    ($self:ident, $reader:ident, $buf:ident, $section:ident) => {{
+    ($read_method:ident, $self:ident, $reader:ident, $buf:ident, $section:ident) => {{
         let mut ar = None;
         let mut od = None;
         let mut cs = None;
@@ -211,7 +225,7 @@ macro_rules! parse_difficulty_body {
 
         let mut empty = true;
 
-        while read_line!($reader, $buf)? != 0 {
+        while $read_method!($reader, $buf)? != 0 {
             let line = line_prepare!($buf);
 
             if line.starts_with('[') && line.ends_with(']') {
@@ -255,27 +269,36 @@ macro_rules! parse_difficulty {
             buf: &mut String,
             section: &mut Section,
         ) -> ParseResult<bool> {
-            parse_difficulty_body!(self, reader, buf, section)
+            parse_difficulty_body!(read_line_sync, self, reader, buf, section)
         }
     };
 
-    (async $reader:ident<$inner:ident>) => {
+    (async $reader:ident<$inner:ident>, $reader_sync:ident<$inner_sync:ident>) => {
         async fn parse_difficulty<R: $inner + Unpin>(
             &mut self,
             reader: &mut $reader<R>,
             buf: &mut String,
             section: &mut Section,
         ) -> ParseResult<bool> {
-            parse_difficulty_body!(self, reader, buf, section)
+            parse_difficulty_body!(read_line_async, self, reader, buf, section)
+        }
+
+        fn parse_difficulty_sync<R: $inner_sync>(
+            &mut self,
+            reader: &mut $reader_sync<R>,
+            buf: &mut String,
+            section: &mut Section,
+        ) -> ParseResult<bool> {
+            parse_difficulty_body!(read_line_sync, self, reader, buf, section)
         }
     };
 }
 
 macro_rules! parse_timingpoints_body {
-    (short => $self:ident, $reader:ident, $buf:ident, $section:ident) => {{
+    ($read_method:ident, short => $self:ident, $reader:ident, $buf:ident, $section:ident) => {{
         let mut empty = true;
 
-        while read_line!($reader, $buf)? != 0 {
+        while $read_method!($reader, $buf)? != 0 {
             let line = line_prepare!($buf);
 
             if line.starts_with('[') && line.ends_with(']') {
@@ -291,7 +314,7 @@ macro_rules! parse_timingpoints_body {
         Ok(empty)
     }};
 
-    ($self:ident, $reader:ident, $buf:ident, $section:ident) => {{
+    ($read_method:ident, $self:ident, $reader:ident, $buf:ident, $section:ident) => {{
         let mut unsorted_timings = false;
         let mut unsorted_difficulties = false;
 
@@ -300,7 +323,7 @@ macro_rules! parse_timingpoints_body {
 
         let mut empty = true;
 
-        while read_line!($reader, $buf)? != 0 {
+        while $read_method!($reader, $buf)? != 0 {
             let line = line_prepare!($buf);
 
             if line.starts_with('[') && line.ends_with(']') {
@@ -369,15 +392,15 @@ macro_rules! parse_timingpoints {
         ) -> ParseResult<bool> {
             #[cfg(not(any(feature = "osu", feature = "fruits")))]
             {
-                parse_timingpoints_body!(short => self, reader, buf, section)
+                parse_timingpoints_body!(read_line_sync, short => self, reader, buf, section)
             }
 
             #[cfg(any(feature = "osu", feature = "fruits"))]
-            parse_timingpoints_body!(self, reader, buf, section)
+            parse_timingpoints_body!(read_line_sync, self, reader, buf, section)
         }
     };
 
-    (async $reader:ident<$inner:ident>) => {
+    (async $reader:ident<$inner:ident>, $reader_sync:ident<$inner_sync:ident>) => {
         async fn parse_timingpoints<R: $inner + Unpin>(
             &mut self,
             reader: &mut $reader<R>,
@@ -386,23 +409,38 @@ macro_rules! parse_timingpoints {
         ) -> ParseResult<bool> {
             #[cfg(not(any(feature = "osu", feature = "fruits")))]
             {
-                parse_timingpoints_body!(short => self, reader, buf, section)
+                parse_timingpoints_body!(read_line_async, short => self, reader, buf, section)
             }
 
             #[cfg(any(feature = "osu", feature = "fruits"))]
-            parse_timingpoints_body!(self, reader, buf, section)
+            parse_timingpoints_body!(read_line_async, self, reader, buf, section)
+        }
+
+        fn parse_timingpoints_sync<R: $inner_sync>(
+            &mut self,
+            reader: &mut $reader_sync<R>,
+            buf: &mut String,
+            section: &mut Section,
+        ) -> ParseResult<bool> {
+            #[cfg(not(any(feature = "osu", feature = "fruits")))]
+            {
+                parse_timingpoints_body!(read_line_sync, short => self, reader, buf, section)
+            }
+
+            #[cfg(any(feature = "osu", feature = "fruits"))]
+            parse_timingpoints_body!(read_line_sync, self, reader, buf, section)
         }
     };
 }
 
 macro_rules! parse_hitobjects_body {
-    ($self:ident, $reader:ident, $buf:ident, $section:ident) => {{
+    ($read_method:ident, $self:ident, $reader:ident, $buf:ident, $section:ident) => {{
         let mut unsorted = false;
         let mut prev_time = 0.0;
 
         let mut empty = true;
 
-        while read_line!($reader, $buf)? != 0 {
+        while $read_method!($reader, $buf)? != 0 {
             let line = line_prepare!($buf);
 
             if line.starts_with('[') && line.ends_with(']') {
@@ -583,29 +621,38 @@ macro_rules! parse_hitobjects {
             buf: &mut String,
             section: &mut Section,
         ) -> ParseResult<bool> {
-            parse_hitobjects_body!(self, reader, buf, section)
+            parse_hitobjects_body!(read_line_sync, self, reader, buf, section)
         }
     };
 
-    (async $reader:ident<$inner:ident>) => {
+    (async $reader:ident<$inner:ident>, $reader_sync:ident<$inner_sync:ident>) => {
         async fn parse_hitobjects<R: $inner + Unpin>(
             &mut self,
             reader: &mut $reader<R>,
             buf: &mut String,
             section: &mut Section,
         ) -> ParseResult<bool> {
-            parse_hitobjects_body!(self, reader, buf, section)
+            parse_hitobjects_body!(read_line_async, self, reader, buf, section)
+        }
+
+        fn parse_hitobjects_sync<R: $inner_sync>(
+            &mut self,
+            reader: &mut $reader_sync<R>,
+            buf: &mut String,
+            section: &mut Section,
+        ) -> ParseResult<bool> {
+            parse_hitobjects_body!(read_line_sync, self, reader, buf, section)
         }
     };
 }
 
 macro_rules! parse_body {
-    ($reader:ident<$inner:ident>: $input:ident) => {{
+    ($read_method:ident, $section_method:ident, $general:ident, $diff:ident, $timing:ident, $hitobj:ident, $reader:ident<$inner:ident>: $input:ident) => {{
         let mut reader = $reader::new($input);
         let mut buf = String::new();
 
         loop {
-            read_line!(reader, &mut buf)?;
+            $read_method!(reader, &mut buf)?;
 
             // Check for character U+FEFF specifically thanks to map id 797130
             if !buf
@@ -635,12 +682,12 @@ macro_rules! parse_body {
 
         loop {
             match section {
-                Section::General => section!(map, parse_general, reader, buf, section),
-                Section::Difficulty => section!(map, parse_difficulty, reader, buf, section),
-                Section::TimingPoints => section!(map, parse_timingpoints, reader, buf, section),
-                Section::HitObjects => section!(map, parse_hitobjects, reader, buf, section),
+                Section::General => $section_method!(map, $general, reader, buf, section),
+                Section::Difficulty => $section_method!(map, $diff, reader, buf, section),
+                Section::TimingPoints => $section_method!(map, $timing, reader, buf, section),
+                Section::HitObjects => $section_method!(map, $hitobj, reader, buf, section),
                 Section::None => {
-                    if read_line!(reader, &mut buf)? == 0 {
+                    if $read_method!(reader, &mut buf)? == 0 {
                         break;
                     }
 
@@ -662,13 +709,41 @@ macro_rules! parse_body {
 macro_rules! parse {
     ($reader:ident<$inner:ident>) => {
         pub fn parse<R: $inner>(input: R) -> ParseResult<Self> {
-            parse_body!($reader<$inner>: input)
+            parse_body!(
+                read_line_sync,
+                section_sync,
+                parse_general,
+                parse_difficulty,
+                parse_timingpoints,
+                parse_hitobjects,
+                $reader<$inner>: input
+            )
         }
     };
 
-    (async $reader:ident<$inner:ident>) => {
+    (async $reader:ident<$inner:ident>, $reader_sync:ident<$inner_sync:ident>) => {
         pub async fn parse<R: $inner + Unpin>(input: R) -> ParseResult<Self> {
-            parse_body!($reader<$inner>: input)
+            parse_body!(
+                read_line_async,
+                section_async,
+                parse_general,
+                parse_difficulty,
+                parse_timingpoints,
+                parse_hitobjects,
+                $reader<$inner>: input
+            )
+        }
+
+        pub fn parse_sync<R: $inner_sync>(input: R) -> ParseResult<Self> {
+            parse_body!(
+                read_line_sync,
+                section_sync,
+                parse_general_sync,
+                parse_difficulty_sync,
+                parse_timingpoints_sync,
+                parse_hitobjects_sync,
+                $reader_sync<$inner_sync>: input
+            )
         }
     };
 }
@@ -749,29 +824,29 @@ impl Beatmap {
 
 #[cfg(not(any(feature = "async_std", feature = "async_tokio")))]
 impl Beatmap {
-    parse!(BufReader<Read>);
-    parse_general!(BufReader<Read>);
-    parse_difficulty!(BufReader<Read>);
-    parse_timingpoints!(BufReader<Read>);
-    parse_hitobjects!(BufReader<Read>);
+    parse!(SyncBufReader<SyncRead>);
+    parse_general!(SyncBufReader<SyncRead>);
+    parse_difficulty!(SyncBufReader<SyncRead>);
+    parse_timingpoints!(SyncBufReader<SyncRead>);
+    parse_hitobjects!(SyncBufReader<SyncRead>);
 }
 
 #[cfg(feature = "async_tokio")]
 impl Beatmap {
-    parse!(async BufReader<AsyncRead>);
-    parse_general!(async BufReader<AsyncRead>);
-    parse_difficulty!(async BufReader<AsyncRead>);
-    parse_timingpoints!(async BufReader<AsyncRead>);
-    parse_hitobjects!(async BufReader<AsyncRead>);
+    parse!(async BufReader<AsyncRead>, SyncBufReader<SyncRead>);
+    parse_general!(async BufReader<AsyncRead>, SyncBufReader<SyncRead>);
+    parse_difficulty!(async BufReader<AsyncRead>, SyncBufReader<SyncRead>);
+    parse_timingpoints!(async BufReader<AsyncRead>, SyncBufReader<SyncRead>);
+    parse_hitobjects!(async BufReader<AsyncRead>, SyncBufReader<SyncRead>);
 }
 
 #[cfg(feature = "async_std")]
 impl Beatmap {
-    parse!(async AsyncBufReader<AsyncRead>);
-    parse_general!(async AsyncBufReader<AsyncRead>);
-    parse_difficulty!(async AsyncBufReader<AsyncRead>);
-    parse_timingpoints!(async AsyncBufReader<AsyncRead>);
-    parse_hitobjects!(async AsyncBufReader<AsyncRead>);
+    parse!(async AsyncBufReader<AsyncRead>, SyncBufReader<SyncRead>);
+    parse_general!(async AsyncBufReader<AsyncRead>, SyncBufReader<SyncRead>);
+    parse_difficulty!(async AsyncBufReader<AsyncRead>, SyncBufReader<SyncRead>);
+    parse_timingpoints!(async AsyncBufReader<AsyncRead>, SyncBufReader<SyncRead>);
+    parse_hitobjects!(async AsyncBufReader<AsyncRead>, SyncBufReader<SyncRead>);
 }
 
 #[inline]

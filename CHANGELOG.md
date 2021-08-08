@@ -2,6 +2,15 @@
 
 - No changes so far
 
+# v0.2.8
+
+- When using async features, the `parse_sync` method is still provided, you can choose freely.
+- Upgrade to tokio1.9
+
+# v0.2.7
+
+- bug fix
+
 # v0.2.6
 
 - `peace_edition`: no longer contains relax/ap nerf, instead use `relax_nerf`.
