@@ -2,63 +2,33 @@
 
 extern crate peace_performance;
 
-use peace_performance::Beatmap;
+use peace_performance::{Beatmap};
 
-struct MapResult {
-    map_id: u32,
-    mods: u32,
-    stars: f32,
-    pp: f32,
-}
-
-macro_rules! assert_result {
-    ($kind:expr => $result:expr, $margin:expr, $expected:ident, $map_id:ident, $mods:ident) => {
-        assert!(
-            ($result - $expected).abs() < $margin * $expected,
-            "\n{kind}:\n\
-                Calculated: {calculated} | Expected: {expected}\n \
-                => {margin} margin ({allowed} allowed)\n\
-                [map {map} | mods {mods}]\n",
-            kind = $kind,
-            calculated = $result,
-            expected = $expected,
-            margin = ($result - $expected).abs(),
-            allowed = $margin * $expected,
-            map = $map_id,
-            mods = $mods
-        );
-    };
-}
-
-fn margin() -> f32 {
-    if cfg!(feature = "no_sliders_no_leniency") {
-        0.0075
-    } else if cfg!(feature = "no_leniency") {
-        0.0025
-    } else if cfg!(feature = "all_included") {
-        0.001
-    } else {
-        unreachable!()
-    }
+struct MapResult<'a> {
+    mapname: &'a str,
+    mods: u32
 }
 
 fn osu_test(map: Beatmap, result: &MapResult) {
-    let margin = margin();
-
-    let star_margin = margin;
-    let pp_margin = margin;
-
+    
     let MapResult {
-        map_id,
-        mods,
-        stars,
-        pp,
+        mapname: _,
+        mods
     } = result;
 
-    let result = peace_performance::OsuPP::new(&map).mods(*mods).calculate();
-
-    assert_result!("Stars" => result.stars(), star_margin, stars, map_id, mods);
-    assert_result!("PP" => result.pp(), pp_margin, pp, map_id, mods);
+    let mut osupp =  peace_performance::OsuPP::new(&map).mods(*mods).accuracy(100.0);
+    let ppresult = osupp.calculate();
+    let attributes = osupp.attributes.unwrap();
+    let mut slider_bonus = 1.0;
+    let slider_total_combo = attributes.max_combo - attributes.n_circles - attributes.n_spinners;
+    let slider_combo_percentage = (slider_total_combo as f32) / (attributes.max_combo as f32);
+    let combo_per_slider = slider_total_combo as f32 / osupp.map.n_sliders as f32;
+    if slider_combo_percentage > 0.5 && combo_per_slider < 2.1 { 
+        slider_bonus += ((slider_combo_percentage * 100.0 - 50.0).powf(0.3) * (1.5 / ((combo_per_slider - 2.0) * 10.0)).powf(0.5)) / 10.0 * 1.1
+    }
+    println!("{}", result.mapname);
+    println!("slider_combo_percentage: {} combo_per_slider: {}", slider_combo_percentage, combo_per_slider);
+    println!("PP: {}, bouns: {}", ppresult.pp, slider_bonus);
 }
 
 #[cfg(not(any(feature = "async_std", feature = "async_tokio")))]
@@ -88,14 +58,14 @@ fn osu_async_tokio() {
         .block_on(async {
             for result in RESULTS {
                 let file =
-                    match tokio::fs::File::open(format!("./maps/{}.osu", result.map_id)).await {
+                    match tokio::fs::File::open(format!("./maps/{}.osu", result.mapname)).await {
                         Ok(file) => file,
-                        Err(why) => panic!("Could not open file {}.osu: {}", result.map_id, why),
+                        Err(why) => panic!("Could not open file {}.osu: {}", result.mapname, why),
                     };
 
                 let map = match Beatmap::parse(file).await {
                     Ok(map) => map,
-                    Err(why) => panic!("Error while parsing map {}: {}", result.map_id, why),
+                    Err(why) => panic!("Error while parsing map {}: {}", result.mapname, why),
                 };
 
                 osu_test(map, result);
@@ -126,113 +96,91 @@ fn osu_async_std() {
 
 const RESULTS: &[MapResult] = &[
     MapResult {
-        map_id: 1851299,
-        mods: 256,
-        stars: 4.19951953364192,
-        pp: 95.35544846090738,
+        mapname: "Wakeshima Kanon - Tsukinami (Reform) [Nostalgia]",
+        mods: 200
     },
     MapResult {
-        map_id: 1851299,
-        mods: 0,
-        stars: 5.305946555352317,
-        pp: 188.7611225698759,
+        mapname: "Kano - Daisy Blue (Rieri) [Hope]",
+        mods: 200
     },
     MapResult {
-        map_id: 1851299,
-        mods: 8,
-        stars: 5.305946555352317,
-        pp: 207.87782991080368,
+        mapname: "KiRaRe - 367Days (_kotachi_) [Over the Dreams]",
+        mods: 200
     },
     MapResult {
-        map_id: 1851299,
-        mods: 64,
-        stars: 7.352573837272898,
-        pp: 465.60165096277717,
+        mapname: "HoneyWorks - Akatsuki Zukuyo ([C u r i]) [Taeyang's Extra]",
+        mods: 200
     },
     MapResult {
-        map_id: 1851299,
-        mods: 16,
-        stars: 5.628029058321052,
-        pp: 239.33966091681467,
+        mapname: "HoneyWorks - Miraizu feat.Aida Miou(CVToyosaki Aki) (Fycho) [Special]",
+        mods: 200
     },
     MapResult {
-        map_id: 1851299,
-        mods: 2,
-        stars: 4.892665488817249,
-        pp: 108.66545494037493,
-    },
-    // -----
-    MapResult {
-        map_id: 70090,
-        mods: 256,
-        stars: 2.2531214736733975,
-        pp: 17.064864347414005,
+        mapname: "FROZEN QUALIA - Aisubeki Hibi e (Beomsan) [Tsumia's Extra]",
+        mods: 200
     },
     MapResult {
-        map_id: 70090,
-        mods: 0,
-        stars: 2.7853401027561353,
-        pp: 39.80360462535964,
+        mapname: "Yunomi - Wakusei Rabbit (feat. TORIENA) (Cellina) [Usagi]",
+        mods: 200
     },
     MapResult {
-        map_id: 70090,
-        mods: 8,
-        stars: 2.7853401027561353,
-        pp: 45.27724541951056,
+        mapname: "Hatsuki Yura - Yoiyami Hanabi (Lan wings) [Lan]",
+        mods: 200
     },
     MapResult {
-        map_id: 70090,
-        mods: 64,
-        stars: 3.7775299223395877,
-        pp: 108.27132697867293,
+        mapname: "Shoji Meguro - Kimi no Kioku (Aethral Remix) (Akali) [Remembrance]",
+        mods: 200
     },
     MapResult {
-        map_id: 70090,
-        mods: 16,
-        stars: 3.0128373294988626,
-        pp: 83.70428900396428,
+        mapname: "Oomori Seiko - JUSTadICE (TV Size) (fieryrage) [Extreme]",
+        mods: 200
     },
     MapResult {
-        map_id: 70090,
-        mods: 2,
-        stars: 2.673167484837261,
-        pp: 21.254867316318986,
-    },
-    // -----
-    MapResult {
-        map_id: 1241370,
-        mods: 256,
-        stars: 5.558026586611704,
-        pp: 334.51647189180727,
+        mapname: "Kano - Sakura no Zenya (Woood13) [Tears]",
+        mods: 200
     },
     MapResult {
-        map_id: 1241370,
-        mods: 0,
-        stars: 6.983848076867755,
-        pp: 649.1653315906666,
+        mapname: "MOMOIRO CLOVER Z - SANTA SAN (A r M i N) [1-2-SANTA]",
+        mods: 200
     },
     MapResult {
-        map_id: 1241370,
-        mods: 8,
-        stars: 6.983848076867755,
-        pp: 710.594432790455,
+        mapname: "LiSA - Jet Rocket (Wen) [Rocketing Love]",
+        mods: 200
     },
     MapResult {
-        map_id: 1241370,
-        mods: 64,
-        stars: 11.076248857241552,
-        pp: 2378.593642686663,
+        mapname: "seiya-murai feat. ALT - Sumidagawa Karenka (Nevo) [Remembrance]",
+        mods: 200
     },
     MapResult {
-        map_id: 1241370,
-        mods: 16,
-        stars: 7.616427878599069,
-        pp: 843.421001465897,
+        mapname: "fhana - where you are (Sotarks) [Melancholy]",
+        mods: 200
     },
     MapResult {
-        map_id: 1241370,
-        mods: 2,
-        stars: 6.289772601786212,
-        pp: 354.960619132034,
+        mapname: "Poppin'Party x Aya (CV Maeshima Ami) x Kokoro (CV Itou Miku) - Geki! Teikoku Kagekidan (Left) [Left x Karen x bbj0920's Expert]",
+        mods: 200
     },
+    MapResult {
+        mapname: "Yunomi - Koi no Uta (feat. Yuzaki Tsukasa (CV Kito Akari)) (TV Size) (hypercyte) [Expert]",
+        mods: 200
+    },
+    MapResult {
+        mapname: "fhana - Hoshikuzu no Interlude (Sotarks) [Melancholy]",
+        mods: 200
+    },
+    MapResult {
+        mapname: "fhana - Anemone no Hana (Sotarks) [Melancholy]",
+        mods: 200
+    },
+    MapResult {
+        mapname: "765 MILLION ALLSTARS - UNION!! (Fu3ya_) [WE ARE ALL MILLION!!]",
+        mods: 200
+    },
+    MapResult {
+        mapname: "Camellia feat. Nanahira - Bassdrop Freaks (Long Ver.) (RLC) [Extra]",
+        mods: 128
+    },
+    MapResult {
+        mapname: "the peggies - Kimi no Sei (TV Size) (Sotarks) [Extra]",
+        mods: 200
+    }  
 ];
