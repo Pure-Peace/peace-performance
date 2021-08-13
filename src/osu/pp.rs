@@ -661,10 +661,10 @@ impl<'m> OsuPP<'m> {
             acc_value *= 0.8;
         }
 
-        // Peace edition: score v2 buff
-        #[cfg(feature = "peace_edition")]
+        // score_v2_buff: score v2 buff
+        #[cfg(feature = "score_v2_buff")]
         if !self.mods.rx() && self.mods.v2() {
-            acc_value *= 1.2;
+            acc_value *= 1.25;
         }
 
         acc_value

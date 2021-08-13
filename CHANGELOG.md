@@ -11,8 +11,8 @@
 
 # v0.2.10
 
-- Default not enabled `peace_edition`.
-- Fix `peace_edition`'s score v2 buff.
+- Default not enabled `score_v2_buff`.
+- Fix `score_v2_buff`'s score v2 buff.
 
 # v0.2.9
 
@@ -29,8 +29,8 @@
 
 # v0.2.6
 
-- `peace_edition`: no longer contains relax/ap nerf, instead use `relax_nerf`.
-- `peace_edition`: score v2 - acc_value *= `1.20` (buff).
+- `score_v2_buff`: no longer contains relax/ap nerf, instead use `relax_nerf`.
+- `score_v2_buff`: score v2 - acc_value *= `1.20` (buff).
 - `relax_nerf`: relax / ap - acc_value *= `0.7` -> `0.8`.
 
 # v0.2.5
