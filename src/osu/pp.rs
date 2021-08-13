@@ -450,6 +450,20 @@ impl<'m> OsuPP<'m> {
             aim_value *= 0.6 + self.acc.unwrap().powf(4.0) / 2.0
         }
 
+        //Slider on RX
+        if self.mods.rx() {
+            let mut slider_bonus = 1.0;
+            let slider_total_combo = attributes.max_combo - attributes.n_circles - attributes.n_spinners;
+            let slider_combo_percentage = (slider_total_combo as f32) / (attributes.max_combo as f32);
+            let combo_per_slider = slider_total_combo as f32 / self.map.n_sliders as f32;
+            if slider_combo_percentage > 0.5 && combo_per_slider < 2.1 { 
+                slider_bonus += ((slider_combo_percentage * 100.0 - 50.0).powf(0.3) * (1.5 / ((combo_per_slider - 2.0) * 10.0)).powf(0.5)) / 10.0 * 1.1;
+            } else {
+                slider_bonus += 0.05
+            }
+            aim_value *= slider_bonus.min(1.4);
+        }
+
         aim_value
     }
 
