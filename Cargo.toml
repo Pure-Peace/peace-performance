@@ -1,6 +1,6 @@
 [package]
 name = "peace-performance"
-version = "0.2.9"
+version = "0.2.10"
 authors = ["MaxOhn <ohn.m@hotmail.de>", "Pure-Peace <940857703@qq.com>"]
 edition = "2018"
 license = "MIT"
@@ -10,7 +10,7 @@ description = "osu! pp & stars calculation. Peace edition"
 keywords = ["osu", "pp", "async", "async-std", "tokio"]
 
 [features]
-default = ["osu", "taiko", "fruits", "mania", "all_included", "async_tokio", "peace_edition"]
+default = ["osu", "taiko", "fruits", "mania", "all_included", "async_tokio"]
 
 peace_edition = []
 relax_nerf = []

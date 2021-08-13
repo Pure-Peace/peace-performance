@@ -2,6 +2,11 @@
 
 - No changes so far
 
+# v0.2.10
+
+- Default not enabled `peace_edition`.
+- Fix `peace_edition`'s score v2 buff.
+
 # v0.2.9
 
 - Fix: Dead loop when reading an empty .osu file.

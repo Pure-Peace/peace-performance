@@ -102,7 +102,7 @@ println!("PP: {}", result.pp());
 
 | Flag | Description |
 |-----|-----|
-| **`default`** | Enable **async_tokio**, **peace_edition**, **all modes** and choose the **`all_included`** version for osu!standard. Set `default_features = false` to disable. |
+| **`default`** | Enable **async_tokio**, **all modes** and choose the **`all_included`** version for osu!standard. Set `default_features = false` to disable. |
 | **`peace_edition`** | **Buff ScoreV2 (STD)** - `acc *= 1.2` |
 | `relax_nerf` | *Nerf relax and autopilot pp.* Relax: `aim * 0.9, spd * 0.3, acc *0.8`; Autopilot: `aim * 0.3, spd * 0.9, acc * 0.8` |
 | `taiko` | Enable osu!taiko. |

@@ -535,7 +535,7 @@ impl<'m> OsuPP<'m> {
 
         // Peace edition: score v2 buff
         #[cfg(feature = "peace_edition")]
-        if !self.mods.rx() || self.mods.v2() {
+        if !self.mods.rx() && self.mods.v2() {
             acc_value *= 1.2;
         }
 
