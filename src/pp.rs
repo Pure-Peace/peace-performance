@@ -14,6 +14,7 @@ use crate::TaikoPP;
 
 /// Calculator for pp on maps of any mode.
 #[derive(Clone)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum AnyPP<'m> {
     #[cfg(feature = "fruits")]
     Fruits(FruitsPP<'m>),

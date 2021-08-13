@@ -12,6 +12,12 @@ const SPEED_BALANCING_FACTOR: f32 = 40.0;
 const AIM_ANGLE_BONUS_BEGIN: f32 = std::f32::consts::FRAC_PI_3;
 const TIMING_THRESHOLD: f32 = 107.0;
 
+const AIM_REDUCED_SECTION_COUNT: usize = 10;
+const SPEED_REDUCED_SECTION_COUNT: usize = 5;
+
+const AIM_DIFFICULTY_MULTIPLIER: f32 = 1.06;
+const SPEED_DIFFICULTY_MULTIPLIER: f32 = 1.04;
+
 #[derive(Copy, Clone)]
 pub(crate) enum SkillKind {
     Aim,
@@ -22,7 +28,7 @@ impl SkillKind {
     pub(crate) fn strain_value_of(self, current: &DifficultyObject) -> f32 {
         match self {
             Self::Aim => {
-                if current.base.is_spinner() {
+                if current.base.is_spinner {
                     return 0.0;
                 }
 
@@ -37,7 +43,7 @@ impl SkillKind {
                             * (current.jump_dist - scale).max(0.0))
                         .sqrt();
 
-                        result = 1.5 * apply_diminishing_exp(angle_bonus.max(0.0))
+                        result = 1.4 * apply_diminishing_exp(angle_bonus.max(0.0))
                             / (TIMING_THRESHOLD).max(prev_strain_time)
                     }
                 }
@@ -48,7 +54,7 @@ impl SkillKind {
                     .max(jump_dist_exp / current.strain_time)
             }
             Self::Speed => {
-                if current.base.is_spinner() {
+                if current.base.is_spinner {
                     return 0.0;
                 }
 
@@ -86,6 +92,14 @@ impl SkillKind {
                     * (0.95 + speed_bonus * (dist / SINGLE_SPACING_TRESHOLD).powf(3.5))
                     / current.strain_time
             }
+        }
+    }
+
+    #[inline]
+    pub(crate) fn difficulty_values(&self) -> (usize, f32) {
+        match self {
+            Self::Aim => (AIM_REDUCED_SECTION_COUNT, AIM_DIFFICULTY_MULTIPLIER),
+            Self::Speed => (SPEED_REDUCED_SECTION_COUNT, SPEED_DIFFICULTY_MULTIPLIER),
         }
     }
 }

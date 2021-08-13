@@ -2,6 +2,13 @@
 
 - No changes so far
 
+# v0.3.0
+
+- sync with rosu-pp 2.3:
+- Fixed a panic for some mania difficulty calculations on converts
+- **Updated the difficulty & pp changes from 21.07.27**
+- **Updated osu's clockrate bugfix for all modes**
+
 # v0.2.10
 
 - Default not enabled `peace_edition`.
