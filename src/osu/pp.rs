@@ -31,8 +31,8 @@ use crate::{Beatmap, Mods, PpRaw, PpResult, StarResult};
 #[derive(Clone, Debug)]
 #[allow(clippy::upper_case_acronyms)]
 pub struct OsuPP<'m> {
-    map: &'m Beatmap,
-    attributes: Option<DifficultyAttributes>,
+    pub map: &'m Beatmap,
+    pub attributes: Option<DifficultyAttributes>,
     mods: u32,
     combo: Option<usize>,
     acc: Option<f32>,
@@ -348,7 +348,7 @@ impl<'m> OsuPP<'m> {
         }
 
         let aim_value = self.compute_aim_value(total_hits);
-        let speed_value = self.compute_speed_value(total_hits);
+        let speed_value = if self.mods.rx() { self.compute_speed_value(total_hits) * 0.2 } else { self.compute_speed_value(total_hits) };
         let acc_value = self.compute_accuracy_value(total_hits);
 
         let pp = (aim_value.powf(1.1) + speed_value.powf(1.1) + acc_value.powf(1.1))
@@ -394,7 +394,7 @@ impl<'m> OsuPP<'m> {
         if self.n_misses > 0 {
             aim_value *= 0.97
                 * (1.0 - (self.n_misses as f32 / total_hits).powf(0.775))
-                    .powi(self.n_misses as i32);
+                    .powf(self.n_misses as f32 + if self.mods.rx() { (self.n50.unwrap() as f32) * 0.35 } else { 0.0 });
         }
 
         // Combo scaling
@@ -403,20 +403,30 @@ impl<'m> OsuPP<'m> {
         }
 
         // AR bonus
-        let ar_factor = if attributes.ar > 10.33 {
-            attributes.ar - 10.33
-        } else if attributes.ar < 8.0 {
-            0.025 * (8.0 - attributes.ar)
+        let mut ar_bouns = 0.0;
+        if self.mods.rx() {
+            if attributes.ar > 10.67 {
+                ar_bouns = 1.0 + (attributes.ar.powf(1.75) * 0.0005 * (total_hits - 600.0)).min(0.2);
+            } else if attributes.ar < 9.5 {
+                ar_bouns = 1.0 + (0.05 * (9.5 - attributes.ar.powf(1.75)) * 0.0005 * (total_hits - 600.0)).min(0.2);
+            }
         } else {
-            0.0
-        };
-
-        let ar_total_hits_factor = (1.0 + (-(0.007 * (total_hits - 400.0))).exp()).recip();
-        let ar_bonus = 1.0 + (0.03 + 0.37 * ar_total_hits_factor) * ar_factor;
+            let ar_factor = if attributes.ar > 10.33 {
+                attributes.ar - 10.33
+            } else if attributes.ar < 8.0 {
+                0.025 * (8.0 - attributes.ar)
+            } else {
+                0.0
+            };
+            let ar_total_hits_factor = (1.0 + (-(0.007 * (total_hits - 400.0))).exp()).recip();
+            ar_bouns = 1.0 + (0.03 + 0.37 * ar_total_hits_factor) * ar_factor;
+        }
 
         // HD bonus
         if self.mods.hd() {
-            aim_value *= 1.0 + 0.04 * (12.0 - attributes.ar);
+            let mut hd_bonus = 1.0;
+            hd_bonus += if self.mods.rx() { 0.05 * (11.5 - attributes.ar) } else { 0.04 * (12.0 - attributes.ar) };
+            aim_value *= hd_bonus
         }
 
         // FL bonus
@@ -428,19 +438,16 @@ impl<'m> OsuPP<'m> {
             1.0
         };
 
-        aim_value *= ar_bonus.max(fl_bonus);
+        aim_value *= ar_bouns.max(fl_bonus);
 
         // Scale with accuracy
-        aim_value *= 0.5 + self.acc.unwrap() / 2.0;
-        aim_value *= 0.98 + attributes.od * attributes.od / 2500.0;
-
-        // Peace edition: relax aim nerf
-        #[cfg(feature = "relax_nerf")]
+        aim_value *= if self.mods.rx() { 0.25 + self.acc.unwrap() / (1.0 + (1.0 / 3.0)) } else { 0.5 + self.acc.unwrap() / 2.0 };
+        aim_value *= if self.mods.rx() {
+            if attributes.od > 10.0 { 1.0 + (10.0 - attributes.od).powf(2.0) / 25.0 } else {1.0}
+        } else { 0.98 + attributes.od * attributes.od / 2500.0 };
+        // Harder scale on RX
         if self.mods.rx() {
-            aim_value *= 0.9;
-        } else if self.mods.ap() {
-            // autopilot aim nerf
-            aim_value *= 0.3;
+            aim_value *= 0.6 + self.acc.unwrap().powf(4.0) / 2.0
         }
 
         aim_value
@@ -500,15 +507,6 @@ impl<'m> OsuPP<'m> {
                 * (self.n50.unwrap_or(0) as f32 - total_hits / 500.0),
         );
 
-        // Peace edition: relax spd nerf
-        #[cfg(feature = "relax_nerf")]
-        if self.mods.rx() {
-            speed_value *= 0.3;
-        } else if self.mods.ap() {
-            // autopilot spd nerf
-            speed_value *= 0.9;
-        }
-
         speed_value
     }
 
@@ -523,7 +521,7 @@ impl<'m> OsuPP<'m> {
             * (((n300 - (total_hits - n_circles)) * 6.0 + n100 * 2.0 + n50) / (n_circles * 6.0))
                 .max(0.0);
 
-        let mut acc_value = 1.52163_f32.powf(attributes.od) * better_acc_percentage.powi(24) * 2.83;
+        let mut acc_value = 1.52163_f32.powf(attributes.od) * better_acc_percentage.powi(if self.mods.rx() { 28  } else { 24 }) * 2.83;
 
         // Bonus for many hitcircles
         acc_value *= ((n_circles as f32 / 1000.0).powf(0.3)).min(1.15);
@@ -536,12 +534,6 @@ impl<'m> OsuPP<'m> {
         // FL bonus
         if self.mods.fl() {
             acc_value *= 1.02;
-        }
-
-        // Peace edition: relax / ap acc nerf
-        #[cfg(feature = "relax_nerf")]
-        if self.mods.rx() || self.mods.ap() {
-            acc_value *= 0.8;
         }
 
         // Peace edition: score v2 buff
