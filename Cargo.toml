@@ -12,7 +12,8 @@ keywords = ["osu", "pp", "async", "async-std", "tokio"]
 [features]
 default = ["osu", "taiko", "fruits", "mania", "all_included", "async_tokio"]
 
-peace_edition = []
+score_v2_buff = []
+ppysb_edition = []
 relax_nerf = []
 
 # game modes

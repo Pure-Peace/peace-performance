@@ -31,17 +31,17 @@ use crate::{Beatmap, Mods, PpRaw, PpResult, StarResult};
 #[derive(Clone, Debug)]
 #[allow(clippy::upper_case_acronyms)]
 pub struct OsuPP<'m> {
-    map: &'m Beatmap,
-    attributes: Option<DifficultyAttributes>,
-    mods: u32,
-    combo: Option<usize>,
-    acc: Option<f32>,
+    pub map: &'m Beatmap,
+    pub attributes: Option<DifficultyAttributes>,
+    pub mods: u32,
+    pub combo: Option<usize>,
+    pub acc: Option<f32>,
 
-    n300: Option<usize>,
-    n100: Option<usize>,
-    n50: Option<usize>,
-    n_misses: usize,
-    passed_objects: Option<usize>,
+    pub n300: Option<usize>,
+    pub n100: Option<usize>,
+    pub n50: Option<usize>,
+    pub n_misses: usize,
+    pub passed_objects: Option<usize>,
 }
 
 impl<'m> OsuPP<'m> {
@@ -391,10 +391,25 @@ impl<'m> OsuPP<'m> {
         aim_value *= len_bonus;
 
         // Penalize misses
+        #[cfg(not(feature = "ppysb_edition"))]
         if self.n_misses > 0 {
             aim_value *= 0.97
                 * (1.0 - (self.n_misses as f32 / total_hits).powf(0.775))
                     .powi(self.n_misses as i32);
+        }
+
+        #[cfg(feature = "ppysb_edition")]
+        if self.n_misses > 0 {
+            let n50 = self.n50.unwrap_or(0);
+            if self.mods.rx() && n50 > 0 {
+                aim_value *= 0.97
+                    * (1.0 - (self.n_misses as f32 / total_hits).powf(0.775))
+                        .powf(self.n_misses as f32 + (n50 as f32 * 0.35));
+            } else {
+                aim_value *= 0.97
+                    * (1.0 - (self.n_misses as f32 / total_hits).powf(0.775))
+                        .powi(self.n_misses as i32);
+            }
         }
 
         // Combo scaling
@@ -403,20 +418,58 @@ impl<'m> OsuPP<'m> {
         }
 
         // AR bonus
-        let ar_factor = if attributes.ar > 10.33 {
-            attributes.ar - 10.33
-        } else if attributes.ar < 8.0 {
-            0.025 * (8.0 - attributes.ar)
-        } else {
-            0.0
+        #[cfg(not(feature = "ppysb_edition"))]
+        let ar_bonus = {
+            let ar_factor = if attributes.ar > 10.33 {
+                attributes.ar - 10.33
+            } else if attributes.ar < 8.0 {
+                0.025 * (8.0 - attributes.ar)
+            } else {
+                0.0
+            };
+
+            let ar_total_hits_factor = (1.0 + (-(0.007 * (total_hits - 400.0))).exp()).recip();
+            1.0 + (0.03 + 0.37 * ar_total_hits_factor) * ar_factor
         };
 
-        let ar_total_hits_factor = (1.0 + (-(0.007 * (total_hits - 400.0))).exp()).recip();
-        let ar_bonus = 1.0 + (0.03 + 0.37 * ar_total_hits_factor) * ar_factor;
+        #[cfg(feature = "ppysb_edition")]
+        let ar_bonus = {
+            if self.mods.rx() {
+                if attributes.ar > 10.67 {
+                    1.0 + (attributes.ar.powf(1.75) * 0.0005 * (total_hits - 600.0)).min(0.2)
+                } else if attributes.ar < 9.5 {
+                    1.0 + (0.05 * (9.5 - attributes.ar.powf(1.75)) * 0.0005 * (total_hits - 600.0))
+                        .min(0.2)
+                } else {
+                    0.0
+                }
+            } else {
+                let ar_factor = if attributes.ar > 10.33 {
+                    attributes.ar - 10.33
+                } else if attributes.ar < 8.0 {
+                    0.025 * (8.0 - attributes.ar)
+                } else {
+                    0.0
+                };
+
+                let ar_total_hits_factor = (1.0 + (-(0.007 * (total_hits - 400.0))).exp()).recip();
+                1.0 + (0.03 + 0.37 * ar_total_hits_factor) * ar_factor
+            }
+        };
 
         // HD bonus
+        #[cfg(not(feature = "ppysb_edition"))]
         if self.mods.hd() {
             aim_value *= 1.0 + 0.04 * (12.0 - attributes.ar);
+        }
+
+        #[cfg(feature = "ppysb_edition")]
+        if self.mods.hd() {
+            if self.mods.rx() {
+                aim_value *= 1.0 + 0.05 * (11.5 - attributes.ar)
+            } else {
+                aim_value *= 1.0 + 0.04 * (12.0 - attributes.ar);
+            }
         }
 
         // FL bonus
@@ -431,11 +484,55 @@ impl<'m> OsuPP<'m> {
         aim_value *= ar_bonus.max(fl_bonus);
 
         // Scale with accuracy
-        aim_value *= 0.5 + self.acc.unwrap() / 2.0;
-        aim_value *= 0.98 + attributes.od * attributes.od / 2500.0;
+        #[cfg(not(feature = "ppysb_edition"))]
+        {
+            aim_value *= 0.5 + self.acc.unwrap_or(0.0) / 2.0;
+            aim_value *= 0.98 + attributes.od * attributes.od / 2500.0;
+        }
+
+        #[cfg(feature = "ppysb_edition")]
+        if self.mods.rx() {
+            let acc = self.acc.unwrap_or(0.0);
+            aim_value *= 0.25 + acc / (1.0 + (1.0 / 3.0));
+            if attributes.od > 10.0 {
+                aim_value *= 1.0 + (10.0 - attributes.od).powf(2.0) / 25.0
+            };
+            // Harder scale on RX
+            aim_value *= 0.6 + acc.powf(4.0) / 2.0
+        } else {
+            aim_value *= 0.5 + self.acc.unwrap_or(0.0) / 2.0;
+            aim_value *= 0.98 + attributes.od * attributes.od / 2500.0;
+        }
+
+        // Slider on RX (only feature ppysb_edition)
+        #[cfg(feature = "ppysb_edition")]
+        if self.mods.rx() {
+            let slider_total_combo =
+                attributes.max_combo - attributes.n_circles - attributes.n_spinners;
+            let slider_combo_percentage =
+                (slider_total_combo as f32) / (attributes.max_combo as f32);
+            let combo_per_slider = slider_total_combo as f32 / self.map.n_sliders as f32;
+
+            aim_value *= if slider_combo_percentage > 0.5 && combo_per_slider < 2.1 {
+                1.0 + ((slider_combo_percentage * 100.0 - 50.0).powf(0.3)
+                    * (1.5 / ((combo_per_slider - 2.0) * 10.0)).powf(0.5))
+                    / 10.0
+                    * 1.1
+            } else {
+                1.05
+            }
+            .min(1.4);
+        }
+
+        // Autopilot nerf
+        #[cfg(feature = "ppysb_edition")]
+        if self.mods.ap() {
+            // autopilot aim nerf
+            aim_value *= 0.2;
+        }
 
         // Peace edition: relax aim nerf
-        #[cfg(feature = "relax_nerf")]
+        #[cfg(all(feature = "relax_nerf", not(feature = "ppysb_edition")))]
         if self.mods.rx() {
             aim_value *= 0.9;
         } else if self.mods.ap() {
@@ -500,13 +597,22 @@ impl<'m> OsuPP<'m> {
                 * (self.n50.unwrap_or(0) as f32 - total_hits / 500.0),
         );
 
-        // Peace edition: relax spd nerf
-        #[cfg(feature = "relax_nerf")]
+        // feature relax_nerf: relax & autopilot spd nerf
+        #[cfg(all(feature = "relax_nerf", not(feature = "ppysb_edition")))]
         if self.mods.rx() {
             speed_value *= 0.3;
         } else if self.mods.ap() {
             // autopilot spd nerf
             speed_value *= 0.9;
+        }
+
+        // feature ppysb_edition: relax & autopilot spd buff
+        #[cfg(feature = "ppysb_edition")]
+        if self.mods.rx() {
+            speed_value *= 0.2;
+        } else if self.mods.ap() {
+            // autopilot spd buff
+            speed_value *= 1.345;
         }
 
         speed_value
@@ -523,7 +629,12 @@ impl<'m> OsuPP<'m> {
             * (((n300 - (total_hits - n_circles)) * 6.0 + n100 * 2.0 + n50) / (n_circles * 6.0))
                 .max(0.0);
 
+        #[cfg(not(feature = "ppysb_edition"))]
         let mut acc_value = 1.52163_f32.powf(attributes.od) * better_acc_percentage.powi(24) * 2.83;
+        #[cfg(feature = "ppysb_edition")]
+        let mut acc_value = 1.52163_f32.powf(attributes.od)
+            * better_acc_percentage.powi(if self.mods.rx() { 28 } else { 24 })
+            * 2.83;
 
         // Bonus for many hitcircles
         acc_value *= ((n_circles as f32 / 1000.0).powf(0.3)).min(1.15);
@@ -538,16 +649,22 @@ impl<'m> OsuPP<'m> {
             acc_value *= 1.02;
         }
 
-        // Peace edition: relax / ap acc nerf
-        #[cfg(feature = "relax_nerf")]
+        // ppysb_edition: autopilot acc buff
+        #[cfg(feature = "ppysb_edition")]
+        if self.mods.ap() {
+            acc_value *= 1.54;
+        }
+
+        // relax_nerf: relax / ap acc nerf
+        #[cfg(all(feature = "relax_nerf", not(feature = "ppysb_edition")))]
         if self.mods.rx() || self.mods.ap() {
             acc_value *= 0.8;
         }
 
-        // Peace edition: score v2 buff
-        #[cfg(feature = "peace_edition")]
+        // score_v2_buff: score v2 buff
+        #[cfg(feature = "score_v2_buff")]
         if !self.mods.rx() && self.mods.v2() {
-            acc_value *= 1.2;
+            acc_value *= 1.25;
         }
 
         acc_value
