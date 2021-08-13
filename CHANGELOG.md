@@ -2,6 +2,19 @@
 
 - No changes so far
 
+# v0.4.0
+
+- Add new feature `ppysb_edition` (Special changes for **RELAX** and **AUTOPILOT**)
+- By [TUROU2004](https://github.com/TROU2004):
+  - **High AR bonus relates to the number of beatmap objects**: Buff longer beatmaps, Nerf shorter beatmaps.
+  - ++ **HD** bonus (Relax)
+  - ++ **ACC weight**, penalty `50` (Relax)
+  - ++ **Slider** bonus.
+- By [Pure-Peace](https://github.com/Pure-Peace):
+  - **Autopilot**: adjusted the proportion of `aim`, `spd`, and `acc` to the total pp.
+- Rename feature `peace_edition` -> `score_v2_buff`
+- score_v2_buff: `acc *= 1.25` (Only std, exclude relax and autopilot)
+
 # v0.3.0
 
 - sync with rosu-pp 2.3:

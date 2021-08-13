@@ -1,6 +1,6 @@
 [package]
 name = "peace-performance"
-version = "0.3.0"
+version = "0.4.0"
 authors = ["MaxOhn <ohn.m@hotmail.de>", "Pure-Peace <940857703@qq.com>"]
 edition = "2018"
 license = "MIT"
