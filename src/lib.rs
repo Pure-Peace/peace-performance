@@ -414,7 +414,7 @@ pub struct PpRaw {
 }
 
 impl PpRaw {
-    #[inline(always)]
+    #[inline]
     pub fn new(
         aim: Option<f32>,
         spd: Option<f32>,

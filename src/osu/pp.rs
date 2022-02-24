@@ -143,7 +143,7 @@ impl<'m> OsuPP<'m> {
         self
     }
 
-    #[inline(always)]
+    #[inline]
     /// Set acc value
     ///
     /// If it is used to calculate the PP of multiple different ACCs,

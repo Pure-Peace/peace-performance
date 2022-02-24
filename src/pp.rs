@@ -147,7 +147,7 @@ impl<'m> AnyPP<'m> {
 
 
     #[allow(unused_variables)]
-    #[inline(always)]
+    #[inline]
     /// Set the accuracy between 0.0 and 100.0.
     ///
     /// For some modes this method depends on previously set values
